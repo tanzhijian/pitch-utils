@@ -1,0 +1,4 @@
+- Ignore files and folders mentioned in .gitignore, don't read or operate.
+- Don't install new dependency packages.
+- When testing is required, execute `uv run pytest`
+- Only execute the `ty` and `ruff` commands when given an explicit command: `uv run ty check` `uv run ruff check`
