@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import Iterator, Literal
 
 import numpy as np
@@ -40,34 +40,128 @@ class Rectangle:
         self.height = height
 
 
-class Standard:
-    TOUCH_LINE = 105.0
-    GOAL_LINE = 68.0
-    CENTER_CIRCLE_RADIUS = 9.15
-    PENALTY_AREA_LENGTH = 16.5
-    PENALTY_MARK_DISTANCE = 11.0
-    GOAL_AREA_LENGTH = 5.5
-    CORNER_ARC_RADIUS = 1.0
-    GOAL_WIDTH = 7.32
-    GOAL_HEIGHT = 2.44
-    MARK_RADIUS = 0.1
+@dataclass(frozen=True)
+class MarkingDimensions:
+    center_circle_radius: float = 9.15
+    penalty_area_length: float = 16.5
+    penalty_mark_distance: float = 11.0
+    goal_area_length: float = 5.5
+    corner_arc_radius: float = 1.0
+    goal_width: float = 7.32
+    goal_height: float = 2.44
+    mark_radius: float = 0.1
+
+    def scaled(self, factor: float) -> "MarkingDimensions":
+        return MarkingDimensions(
+            **{f.name: getattr(self, f.name) * factor for f in fields(self)}
+        )
+
+    def __mul__(self, factor: float) -> "MarkingDimensions":
+        return self.scaled(factor)
+
+    def __rmul__(self, factor: float) -> "MarkingDimensions":
+        return self.scaled(factor)
+
+    def __truediv__(self, factor: float) -> "MarkingDimensions":
+        return self.scaled(1 / factor)
 
 
-@dataclass
 class Markings:
-    touch_line: float = Standard.TOUCH_LINE
-    goal_line: float = Standard.GOAL_LINE
-    center_circle_radius: float = Standard.CENTER_CIRCLE_RADIUS
-    penalty_area_length: float = Standard.PENALTY_AREA_LENGTH
-    penalty_mark_distance: float = Standard.PENALTY_MARK_DISTANCE
-    goal_area_length: float = Standard.GOAL_AREA_LENGTH
-    corner_arc_radius: float = Standard.CORNER_ARC_RADIUS
-    goal_width: float = Standard.GOAL_WIDTH
-    goal_height: float = Standard.GOAL_HEIGHT
-    mark_radius: float = Standard.MARK_RADIUS
+    _standard_touch_line = 105.0
+    _max_touch_line = 110.0
+    _min_touch_line = 100.0
+    _standard_goal_line = 68.0
+    _max_goal_line = 75.0
+    _min_goal_line = 64.0
+
+    def __init__(
+        self,
+        touch_line: float = _standard_touch_line,
+        goal_line: float = _standard_goal_line,
+        dimensions: Literal["metric", "scaled"]
+        | MarkingDimensions
+        | None = None,
+    ) -> None:
+        self._touch_line = touch_line
+        self._goal_line = goal_line
+        self._mode: Literal["metric", "scaled", "custom"]
+
+        if isinstance(dimensions, MarkingDimensions):
+            self._dimensions = dimensions
+            self._mode = "custom"
+        elif dimensions == "metric":
+            self._dimensions = MarkingDimensions()
+            self._mode = "metric"
+        elif dimensions == "scaled":
+            self._dimensions = self._scaled_dimensions()
+            self._mode = "scaled"
+        elif dimensions is None:
+            if not self._is_standard_range():
+                self._dimensions = self._scaled_dimensions()
+                self._mode = "scaled"
+            else:
+                self._dimensions = MarkingDimensions()
+                self._mode = "metric"
+        else:
+            raise ValueError("Invalid value for dimensions")
+
+    def _is_standard_range(self) -> bool:
+        return (
+            self._min_touch_line <= self._touch_line <= self._max_touch_line
+            and self._min_goal_line <= self._goal_line <= self._max_goal_line
+        )
+
+    def _scaled_dimensions(self) -> MarkingDimensions:
+        return MarkingDimensions() / (
+            self._touch_line / self._standard_touch_line
+        )
+
+    @property
+    def mode(self) -> Literal["metric", "scaled", "custom"]:
+        return self._mode
+
+    @property
+    def touch_line(self) -> float:
+        return self._touch_line
+
+    @property
+    def goal_line(self) -> float:
+        return self._goal_line
+
+    @property
+    def center_circle_radius(self) -> float:
+        return self._dimensions.center_circle_radius
+
+    @property
+    def penalty_area_length(self) -> float:
+        return self._dimensions.penalty_area_length
+
+    @property
+    def penalty_mark_distance(self) -> float:
+        return self._dimensions.penalty_mark_distance
+
+    @property
+    def goal_area_length(self) -> float:
+        return self._dimensions.goal_area_length
+
+    @property
+    def corner_arc_radius(self) -> float:
+        return self._dimensions.corner_arc_radius
+
+    @property
+    def goal_width(self) -> float:
+        return self._dimensions.goal_width
+
+    @property
+    def goal_height(self) -> float:
+        return self._dimensions.goal_height
+
+    @property
+    def mark_radius(self) -> float:
+        return self._dimensions.mark_radius
 
     def aspect_ratio(self) -> float:
-        return self.goal_line / self.touch_line
+        return self._goal_line / self._touch_line
 
 
 class CoordinateSystem:
