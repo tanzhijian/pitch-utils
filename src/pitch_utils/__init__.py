@@ -1,11 +1,11 @@
-from ._models import Coordinates, LineRange, Markings, Pitch, Point
-from ._transforms import transform
+from ._models import CoordinateSystem, Markings, Pitch, Point
+from ._transforms import scale
 
 __all__ = [
-    "Coordinates",
+    "CoordinateSystem",
     "LineRange",
     "Markings",
     "Pitch",
     "Point",
-    "transform",
+    "scale",
 ]

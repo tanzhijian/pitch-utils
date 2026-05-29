@@ -1,10 +1,15 @@
-from ._models import Pitch, Point
+from ._models import Locations, Pitch
+from ._types import LocationsTypes
 
 
-def transform(point: Point, from_pitch: Pitch, to_pitch: Pitch) -> Point:
-    return Point(
-        x=point.x
-        * (to_pitch.coordinates.x_span / from_pitch.coordinates.x_span),
-        y=point.y
-        * (to_pitch.coordinates.y_span / from_pitch.coordinates.y_span),
+def scale(
+    locations: LocationsTypes,
+    from_pitch: Pitch,
+    to_pitch: Pitch,
+) -> Locations:
+    locs = Locations(locations)
+    transformed_arr = locs._arr * (
+        to_pitch.coord_sys.x_length / from_pitch.coord_sys.x_length,
+        to_pitch.coord_sys.y_length / from_pitch.coord_sys.y_length,
     )
+    return Locations(transformed_arr)
