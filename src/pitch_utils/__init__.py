@@ -1,10 +1,5 @@
-from ._models import (
-    CoordinateSystem,
-    MarkingDimensions,
-    Markings,
-    Pitch,
-    Point,
-)
+from ._markings import MarkingDimensions, Markings
+from ._models import CoordinateSystem, Pitch, Point
 from ._transforms import scale
 
 __all__ = [
