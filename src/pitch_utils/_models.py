@@ -78,46 +78,46 @@ class Markings:
         self,
         touch_line: float = _standard_touch_line,
         goal_line: float = _standard_goal_line,
-        dimensions: Literal["metric", "scaled"]
+        spec: Literal["standard", "scaled"]
         | MarkingDimensions
         | None = None,
     ) -> None:
         self._touch_line = touch_line
         self._goal_line = goal_line
-        self._mode: Literal["metric", "scaled", "custom"]
+        self._mode: Literal["standard", "scaled", "custom"]
 
-        if isinstance(dimensions, MarkingDimensions):
-            self._dimensions = dimensions
+        if isinstance(spec, MarkingDimensions):
+            self._dimensions = spec
             self._mode = "custom"
-        elif dimensions == "metric":
+        elif spec == "standard":
             self._dimensions = MarkingDimensions()
-            self._mode = "metric"
-        elif dimensions == "scaled":
+            self._mode = "standard"
+        elif spec == "scaled":
             self._dimensions = self._scaled_dimensions()
             self._mode = "scaled"
-        elif dimensions is None:
-            if not self._is_standard_range():
+        elif spec is None:
+            if not self._is_regulation_range():
                 self._dimensions = self._scaled_dimensions()
                 self._mode = "scaled"
             else:
                 self._dimensions = MarkingDimensions()
-                self._mode = "metric"
+                self._mode = "standard"
         else:
-            raise ValueError("Invalid value for dimensions")
+            raise ValueError("Invalid value for spec")
 
-    def _is_standard_range(self) -> bool:
+    def _is_regulation_range(self) -> bool:
         return (
             self._min_touch_line <= self._touch_line <= self._max_touch_line
             and self._min_goal_line <= self._goal_line <= self._max_goal_line
         )
 
     def _scaled_dimensions(self) -> MarkingDimensions:
-        return MarkingDimensions() / (
+        return MarkingDimensions() * (
             self._touch_line / self._standard_touch_line
         )
 
     @property
-    def mode(self) -> Literal["metric", "scaled", "custom"]:
+    def mode(self) -> Literal["standard", "scaled", "custom"]:
         return self._mode
 
     @property
