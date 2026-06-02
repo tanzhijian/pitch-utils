@@ -4,7 +4,7 @@ from typing import Literal
 
 @dataclass(frozen=True)
 class MarkingDimensions:
-    center_circle_radius: float = 9.15
+    centre_circle_radius: float = 9.15
     penalty_area_length: float = 16.5
     penalty_mark_distance: float = 11.0
     goal_area_length: float = 5.5
@@ -89,8 +89,8 @@ class Markings:
         return self._goal_line
 
     @property
-    def center_circle_radius(self) -> float:
-        return self._dims.center_circle_radius
+    def centre_circle_radius(self) -> float:
+        return self._dims.centre_circle_radius
 
     @property
     def penalty_area_length(self) -> float:

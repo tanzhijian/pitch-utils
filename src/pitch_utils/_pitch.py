@@ -10,6 +10,11 @@ class Point:
         self.x = x
         self.y = y
 
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Point):
+            return False
+        return self.x == value.x and self.y == value.y
+
     def reflect(self, pivot: "Line") -> "Point":
         raise NotImplementedError
 
@@ -27,7 +32,10 @@ class Line:
 
     @property
     def center(self) -> Point:
-        raise NotImplementedError
+        return Point(
+            x=(self.start.x + self.end.x) / 2,
+            y=(self.start.y + self.end.y) / 2,
+        )
 
     @property
     def is_vertical(self) -> bool:
@@ -53,9 +61,52 @@ class Rectangle:
         width: float,
         height: float,
     ) -> None:
-        self.bottom_left = bottom_left
-        self.width = width
-        self.height = height
+        self._bottom_left = bottom_left
+        self._width = width
+        self._height = height
+
+    @property
+    def width(self) -> float:
+        return self._width
+
+    @property
+    def height(self) -> float:
+        return self._height
+
+    @property
+    def bottom_left(self) -> Point:
+        return self._bottom_left
+
+    @property
+    def bottom_right(self) -> Point:
+        return Point(self._bottom_left.x + self._width, self._bottom_left.y)
+
+    @property
+    def top_left(self) -> Point:
+        return Point(self._bottom_left.x, self._bottom_left.y + self._height)
+
+    @property
+    def top_right(self) -> Point:
+        return Point(
+            self._bottom_left.x + self._width,
+            self._bottom_left.y + self._height,
+        )
+
+    @property
+    def left(self) -> Line:
+        return Line(self.bottom_left, self.top_left)
+
+    @property
+    def right(self) -> Line:
+        return Line(self.bottom_right, self.top_right)
+
+    @property
+    def bottom(self) -> Line:
+        return Line(self.bottom_left, self.bottom_right)
+
+    @property
+    def top(self) -> Line:
+        return Line(self.top_left, self.top_right)
 
     def reflect(self, pivot: "Line") -> "Rectangle":
         raise NotImplementedError
@@ -100,6 +151,10 @@ class Pitch(ABC):
         return self._coord_sys
 
     @property
+    def markings(self) -> Markings:
+        return self._markings
+
+    @property
     @abstractmethod
     def touch_line(self) -> Line:
         raise NotImplementedError
@@ -116,16 +171,22 @@ class Pitch(ABC):
 
     @property
     def centre_circle(self) -> Circle:
-        raise NotImplementedError
-
-    @property
-    def centre_mark(self) -> Circle:
-        raise NotImplementedError
+        return Circle(
+            center=self.halfway_line.center,
+            radius=self._markings.centre_circle_radius,
+        )
 
     @property
     @abstractmethod
     def halfway_line(self) -> Line:
         raise NotImplementedError
+
+    @property
+    def centre_mark(self) -> Circle:
+        return Circle(
+            center=self.halfway_line.center,
+            radius=self._markings.mark_radius,
+        )
 
     @property
     @abstractmethod
@@ -212,7 +273,10 @@ class HorizontalPitch(Pitch):
 
     @property
     def halfway_line(self) -> Line:
-        raise NotImplementedError
+        return Line(
+            start=self.canvas.bottom.center,
+            end=self.canvas.top.center,
+        )
 
     @property
     def penalty_arc_1(self) -> Circle:
@@ -232,6 +296,9 @@ class HorizontalPitch(Pitch):
 
     @property
     def goal_1(self) -> Rectangle:
+        raise NotImplementedError
+
+    def to_vertical(self) -> "VerticalPitch":
         raise NotImplementedError
 
 
@@ -257,6 +324,15 @@ class VerticalPitch(Pitch):
         )
 
     @property
+    def goal_line(self) -> Line:
+        return Line(
+            start=Point(
+                x=self._goal_line_range[0], y=self._touch_line_range[0]
+            ),
+            end=Point(x=self._goal_line_range[1], y=self._touch_line_range[0]),
+        )
+
+    @property
     def canvas(self) -> Rectangle:
         return Rectangle(
             bottom_left=Point(self.goal_line.start.x, self.touch_line.start.y),
@@ -265,10 +341,31 @@ class VerticalPitch(Pitch):
         )
 
     @property
-    def goal_line(self) -> Line:
+    def halfway_line(self) -> Line:
         return Line(
-            start=Point(
-                x=self._goal_line_range[0], y=self._touch_line_range[0]
-            ),
-            end=Point(x=self._goal_line_range[1], y=self._touch_line_range[0]),
+            start=self.canvas.left.center,
+            end=self.canvas.right.center,
         )
+
+    @property
+    def penalty_arc_1(self) -> Circle:
+        raise NotImplementedError
+
+    @property
+    def penalty_area_1(self) -> Rectangle:
+        raise NotImplementedError
+
+    @property
+    def penalty_mark_1(self) -> Circle:
+        raise NotImplementedError
+
+    @property
+    def goal_area_1(self) -> Rectangle:
+        raise NotImplementedError
+
+    @property
+    def goal_1(self) -> Rectangle:
+        raise NotImplementedError
+
+    def to_horizontal(self) -> HorizontalPitch:
+        raise NotImplementedError
