@@ -82,11 +82,11 @@ class TestHorizontalPitch:
         assert goal_line.start == Point(0, 0)
         assert goal_line.end == Point(0, 68)
 
-    def test_canvas(self, pitch: HorizontalPitch) -> None:
-        canvas = pitch.canvas
-        assert canvas.bottom_left == Point(0, 0)
-        assert canvas.width == 105
-        assert canvas.height == 68
+    def test_bounds(self, pitch: HorizontalPitch) -> None:
+        bounds = pitch.bounds
+        assert bounds.bottom_left == Point(0, 0)
+        assert bounds.width == 105
+        assert bounds.height == 68
 
     def test_centre_circle(self, pitch: HorizontalPitch) -> None:
         centre_circle = pitch.centre_circle
@@ -128,11 +128,11 @@ class TestVerticalPitch:
         assert goal_line.start == Point(0, 0)
         assert goal_line.end == Point(68, 0)
 
-    def test_canvas(self, pitch: VerticalPitch) -> None:
-        canvas = pitch.canvas
-        assert canvas.bottom_left == Point(0, 0)
-        assert canvas.width == 68
-        assert canvas.height == 105
+    def test_bounds(self, pitch: VerticalPitch) -> None:
+        bounds = pitch.bounds
+        assert bounds.bottom_left == Point(0, 0)
+        assert bounds.width == 68
+        assert bounds.height == 105
 
     def test_halfway_line(self, pitch: VerticalPitch) -> None:
         halfway_line = pitch.halfway_line

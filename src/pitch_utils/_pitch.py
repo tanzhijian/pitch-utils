@@ -166,7 +166,7 @@ class Pitch(ABC):
 
     @property
     @abstractmethod
-    def canvas(self) -> Rectangle:
+    def bounds(self) -> Rectangle:
         raise NotImplementedError
 
     @property
@@ -264,7 +264,7 @@ class HorizontalPitch(Pitch):
         )
 
     @property
-    def canvas(self) -> Rectangle:
+    def bounds(self) -> Rectangle:
         return Rectangle(
             bottom_left=Point(self.touch_line.start.x, self.goal_line.start.y),
             width=self.touch_line.length,
@@ -274,8 +274,8 @@ class HorizontalPitch(Pitch):
     @property
     def halfway_line(self) -> Line:
         return Line(
-            start=self.canvas.bottom.center,
-            end=self.canvas.top.center,
+            start=self.bounds.bottom.center,
+            end=self.bounds.top.center,
         )
 
     @property
@@ -333,7 +333,7 @@ class VerticalPitch(Pitch):
         )
 
     @property
-    def canvas(self) -> Rectangle:
+    def bounds(self) -> Rectangle:
         return Rectangle(
             bottom_left=Point(self.goal_line.start.x, self.touch_line.start.y),
             width=self.goal_line.length,
@@ -343,8 +343,8 @@ class VerticalPitch(Pitch):
     @property
     def halfway_line(self) -> Line:
         return Line(
-            start=self.canvas.left.center,
-            end=self.canvas.right.center,
+            start=self.bounds.left.center,
+            end=self.bounds.right.center,
         )
 
     @property
