@@ -7,13 +7,28 @@ from ._markings import Markings
 
 class Point:
     def __init__(self, x: float, y: float):
-        self.x = x
-        self.y = y
+        self._x = x
+        self._y = y
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Point):
             return False
-        return self.x == value.x and self.y == value.y
+        return self.coords == value.coords
+
+    def __repr__(self) -> str:
+        return f"Point(x={self._x}, y={self._y})"
+
+    @property
+    def x(self) -> float:
+        return self._x
+
+    @property
+    def y(self) -> float:
+        return self._y
+
+    @property
+    def coords(self) -> tuple[float, float]:
+        return (self._x, self._y)
 
     def reflect(self, pivot: "Line") -> "Point":
         raise NotImplementedError
@@ -21,21 +36,42 @@ class Point:
 
 class Line:
     def __init__(self, start: Point, end: Point) -> None:
-        self.start = start
-        self.end = end
+        self._start = start
+        self._end = end
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Line):
+            return False
+        return self.coords == value.coords
+
+    def __repr__(self) -> str:
+        return f"Line(start={self._start}, end={self._end})"
+
+    @property
+    def start(self) -> Point:
+        return self._start
+
+    @property
+    def end(self) -> Point:
+        return self._end
 
     @property
     def length(self) -> float:
         return (
-            (self.end.x - self.start.x) ** 2 + (self.end.y - self.start.y) ** 2
+            (self._end.x - self._start.x) ** 2
+            + (self._end.y - self._start.y) ** 2
         ) ** 0.5
 
     @property
     def center(self) -> Point:
         return Point(
-            x=(self.start.x + self.end.x) / 2,
-            y=(self.start.y + self.end.y) / 2,
+            x=(self._start.x + self._end.x) / 2,
+            y=(self._start.y + self._end.y) / 2,
         )
+
+    @property
+    def coords(self) -> tuple[tuple[float, float], tuple[float, float]]:
+        return (self.start.coords, self.end.coords)
 
     @property
     def is_vertical(self) -> bool:
@@ -47,8 +83,24 @@ class Line:
 
 class Circle:
     def __init__(self, center: Point, radius: float) -> None:
-        self.center = center
-        self.radius = radius
+        self._center = center
+        self._radius = radius
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Circle):
+            return False
+        return self._center == value._center and self._radius == value._radius
+
+    def __repr__(self) -> str:
+        return f"Circle(center={self._center}, radius={self._radius})"
+
+    @property
+    def center(self) -> Point:
+        return self._center
+
+    @property
+    def radius(self) -> float:
+        return self._radius
 
     def reflect(self, pivot: "Line") -> "Circle":
         raise NotImplementedError
@@ -64,6 +116,17 @@ class Rectangle:
         self._bottom_left = bottom_left
         self._width = width
         self._height = height
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Rectangle):
+            return False
+        return self.coords == value.coords
+
+    def __repr__(self) -> str:
+        return (
+            f"Rectangle(bottom_left={self._bottom_left}, "
+            f"width={self._width}, height={self._height})"
+        )
 
     @property
     def width(self) -> float:
@@ -94,7 +157,7 @@ class Rectangle:
 
     @property
     def left(self) -> Line:
-        return Line(self.bottom_left, self.top_left)
+        return Line(self._bottom_left, self.top_left)
 
     @property
     def right(self) -> Line:
@@ -102,11 +165,27 @@ class Rectangle:
 
     @property
     def bottom(self) -> Line:
-        return Line(self.bottom_left, self.bottom_right)
+        return Line(self._bottom_left, self.bottom_right)
 
     @property
     def top(self) -> Line:
         return Line(self.top_left, self.top_right)
+
+    @property
+    def coords(
+        self,
+    ) -> tuple[
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+    ]:
+        return (
+            self._bottom_left.coords,
+            self.bottom_right.coords,
+            self.top_left.coords,
+            self.top_right.coords,
+        )
 
     def reflect(self, pivot: "Line") -> "Rectangle":
         raise NotImplementedError
@@ -145,6 +224,11 @@ class Pitch(ABC):
     @abstractmethod
     def _build_coord_sys(self) -> CoordinateSystem:
         raise NotImplementedError
+
+    def __eq__(self, value: object) -> bool:
+        if type(value) is not type(self):
+            return False
+        return self.bounds == value.bounds and self._markings == value.markings
 
     @property
     def coord_sys(self) -> CoordinateSystem:

@@ -1,12 +1,40 @@
 import pytest
 
-from pitch_utils import HorizontalPitch, Line, Point, Rectangle, VerticalPitch
+from pitch_utils import (
+    Circle,
+    HorizontalPitch,
+    Line,
+    MarkingDimensions,
+    Markings,
+    Point,
+    Rectangle,
+    VerticalPitch,
+)
+
+
+class TestPoint:
+    @pytest.fixture(scope="class")
+    def point(self) -> Point:
+        return Point(1, 1)
+
+    def test_eq(self, point: Point) -> None:
+        assert point == Point(1, 1)
+        assert point != Point(2, 2)
+        assert point != (1, 1)
+
+    def test_coords(self, point: Point) -> None:
+        assert point.coords == (1, 1)
 
 
 class TestLine:
     @pytest.fixture(scope="class")
     def line(self) -> Line:
         return Line(Point(0, 0), Point(100, 0))
+
+    def test_eq(self, line: Line) -> None:
+        assert line == Line(Point(0, 0), Point(100, 0))
+        assert line != Line(Point(0, 0), Point(50, 0))
+        assert line != 2
 
     def test_length(self, line: Line) -> None:
         assert line.length == 100
@@ -16,11 +44,41 @@ class TestLine:
         assert center.x == 50
         assert center.y == 0
 
+    def test_coords(self, line: Line) -> None:
+        assert line.coords == ((0, 0), (100, 0))
+
+
+class TestCircle:
+    @pytest.fixture(scope="class")
+    def circle(self) -> Circle:
+        return Circle(Point(0, 0), 10)
+
+    def test_eq(self, circle: Circle) -> None:
+        assert circle == Circle(Point(0, 0), 10)
+        assert circle != Circle(Point(1, 1), 10)
+        assert circle != Circle(Point(0, 0), 5)
+        assert circle != 2
+
 
 class TestRectangle:
     @pytest.fixture(scope="class")
     def rectangle(self) -> Rectangle:
         return Rectangle(bottom_left=Point(0, 0), width=100, height=60)
+
+    def test_eq(self, rectangle: Rectangle) -> None:
+        assert rectangle == Rectangle(
+            bottom_left=Point(0, 0), width=100, height=60
+        )
+        assert rectangle != Rectangle(
+            bottom_left=Point(1, 1), width=100, height=60
+        )
+        assert rectangle != Rectangle(
+            bottom_left=Point(0, 0), width=50, height=60
+        )
+        assert rectangle != Rectangle(
+            bottom_left=Point(0, 0), width=100, height=30
+        )
+        assert rectangle != 2
 
     def test_bottom_right(self, rectangle: Rectangle) -> None:
         bottom_right = rectangle.bottom_right
@@ -57,11 +115,41 @@ class TestRectangle:
         assert bottom.start == Point(0, 0)
         assert bottom.end == Point(100, 0)
 
+    def test_coords(self, rectangle: Rectangle) -> None:
+        assert rectangle.coords == ((0, 0), (100, 0), (0, 60), (100, 60))
+
 
 class TestHorizontalPitch:
     @pytest.fixture(scope="class")
     def pitch(self) -> HorizontalPitch:
         return HorizontalPitch(
+            touch_line_range=(0, 105),
+            goal_line_range=(0, 68),
+        )
+
+    def test_eq(self, pitch: HorizontalPitch) -> None:
+        assert pitch == HorizontalPitch(
+            touch_line_range=(0, 105),
+            goal_line_range=(0, 68),
+        )
+        assert pitch != HorizontalPitch(
+            touch_line_range=(0, 100),
+            goal_line_range=(0, 68),
+        )
+        assert pitch != HorizontalPitch(
+            touch_line_range=(0, 105),
+            goal_line_range=(0, 60),
+        )
+        assert pitch != HorizontalPitch(
+            touch_line_range=(0, 105),
+            goal_line_range=(0, 68),
+            markings=Markings(
+                touch_line=105,
+                goal_line=68,
+                spec=MarkingDimensions(penalty_mark_distance=12),
+            ),
+        )
+        assert pitch != VerticalPitch(
             touch_line_range=(0, 105),
             goal_line_range=(0, 68),
         )

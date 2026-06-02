@@ -76,9 +76,31 @@ class Markings:
             self._touch_line / self._standard_touch_line
         )
 
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Markings):
+            return False
+        return (
+            self._touch_line == value.touch_line
+            and self._goal_line == value.goal_line
+            and self._mode == value.mode
+            and self._dims == value.dims
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"Markings(touch_line={self._touch_line}, "
+            f"goal_line={self._goal_line}, "
+            f"mode='{self._mode}', "
+            f"dims={self._dims})"
+        )
+
     @property
     def mode(self) -> Literal["standard", "scaled", "custom"]:
         return self._mode
+
+    @property
+    def dims(self) -> MarkingDimensions:
+        return self._dims
 
     @property
     def touch_line(self) -> float:
