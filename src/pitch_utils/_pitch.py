@@ -197,6 +197,12 @@ class CoordinateSystem:
     x_dir: Literal["left", "right"]
     y_dir: Literal["up", "down"]
 
+    def shift_x(self, x: float, offset: float) -> float:
+        return x + offset if self.x_dir == "right" else x - offset
+
+    def shift_y(self, y: float, offset: float) -> float:
+        return y + offset if self.y_dir == "up" else y - offset
+
 
 class Pitch(ABC):
     def __init__(
@@ -274,47 +280,57 @@ class Pitch(ABC):
 
     @property
     @abstractmethod
-    def penalty_arc_1(self) -> Circle:
+    def _penalty_arc_1(self) -> Circle:
+        """Left or bottom"""
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def penalty_area_1(self) -> Rectangle:
+    def _penalty_area_1(self) -> Rectangle:
+        """Left or bottom"""
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def penalty_mark_1(self) -> Circle:
+    def _penalty_mark_1(self) -> Circle:
+        """Left or bottom"""
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def goal_area_1(self) -> Rectangle:
+    def _goal_area_1(self) -> Rectangle:
+        """Left or bottom"""
         raise NotImplementedError
 
     @property
-    def goal_1(self) -> Rectangle:
+    def _goal_1(self) -> Rectangle:
+        """Left or bottom"""
         raise NotImplementedError
 
     @property
-    def penalty_arc_2(self) -> Circle:
-        return self.penalty_arc_1.reflect(self.halfway_line)
+    def _penalty_arc_2(self) -> Circle:
+        """Right or top"""
+        return self._penalty_arc_1.reflect(self.halfway_line)
 
     @property
-    def penalty_area_2(self) -> Rectangle:
-        return self.penalty_area_1.reflect(self.halfway_line)
+    def _penalty_area_2(self) -> Rectangle:
+        """Right or top"""
+        return self._penalty_area_1.reflect(self.halfway_line)
 
     @property
-    def penalty_mark_2(self) -> Circle:
-        return self.penalty_mark_1.reflect(self.halfway_line)
+    def _penalty_mark_2(self) -> Circle:
+        """Right or top"""
+        return self._penalty_mark_1.reflect(self.halfway_line)
 
     @property
-    def goal_area_2(self) -> Rectangle:
-        return self.goal_area_1.reflect(self.halfway_line)
+    def _goal_area_2(self) -> Rectangle:
+        """Right or top"""
+        return self._goal_area_1.reflect(self.halfway_line)
 
     @property
-    def goal_2(self) -> Rectangle:
-        return self.goal_1.reflect(self.halfway_line)
+    def _goal_2(self) -> Rectangle:
+        """Right or top"""
+        return self._goal_1.reflect(self.halfway_line)
 
 
 class HorizontalPitch(Pitch):
@@ -363,23 +379,46 @@ class HorizontalPitch(Pitch):
         )
 
     @property
-    def penalty_arc_1(self) -> Circle:
+    def _penalty_mark_point_1(self) -> Point:
+        return Point(
+            self._coord_sys.shift_x(
+                self.bounds.bottom_left.x, self._markings.penalty_mark_distance
+            ),
+            self.bounds.left.center.y,
+        )
+
+    @property
+    def _penalty_arc_1(self) -> Circle:
+        return Circle(
+            center=self._penalty_mark_point_1,
+            radius=self._markings.centre_circle_radius,
+        )
+
+    @property
+    def left_penalty_arc(self) -> Circle:
+        return self._penalty_arc_1
+
+    @property
+    def _penalty_mark_1(self) -> Circle:
+        return Circle(
+            center=self._penalty_mark_point_1,
+            radius=self._markings.mark_radius,
+        )
+
+    @property
+    def left_penalty_mark(self) -> Circle:
+        return self._penalty_mark_1
+
+    @property
+    def _penalty_area_1(self) -> Rectangle:
         raise NotImplementedError
 
     @property
-    def penalty_area_1(self) -> Rectangle:
+    def _goal_area_1(self) -> Rectangle:
         raise NotImplementedError
 
     @property
-    def penalty_mark_1(self) -> Circle:
-        raise NotImplementedError
-
-    @property
-    def goal_area_1(self) -> Rectangle:
-        raise NotImplementedError
-
-    @property
-    def goal_1(self) -> Rectangle:
+    def _goal_1(self) -> Rectangle:
         raise NotImplementedError
 
     def to_vertical(self) -> "VerticalPitch":
@@ -432,23 +471,23 @@ class VerticalPitch(Pitch):
         )
 
     @property
-    def penalty_arc_1(self) -> Circle:
+    def _penalty_arc_1(self) -> Circle:
         raise NotImplementedError
 
     @property
-    def penalty_area_1(self) -> Rectangle:
+    def _penalty_area_1(self) -> Rectangle:
         raise NotImplementedError
 
     @property
-    def penalty_mark_1(self) -> Circle:
+    def _penalty_mark_1(self) -> Circle:
         raise NotImplementedError
 
     @property
-    def goal_area_1(self) -> Rectangle:
+    def _goal_area_1(self) -> Rectangle:
         raise NotImplementedError
 
     @property
-    def goal_1(self) -> Rectangle:
+    def _goal_1(self) -> Rectangle:
         raise NotImplementedError
 
     def to_horizontal(self) -> HorizontalPitch:

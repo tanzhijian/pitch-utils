@@ -191,6 +191,16 @@ class TestHorizontalPitch:
         assert centre_mark.center == Point(52.5, 34)
         assert centre_mark.radius == 0.1
 
+    def test_left_penalty_arc(self, pitch: HorizontalPitch) -> None:
+        arc = pitch.left_penalty_arc
+        assert arc.center == Point(11, 34)
+        assert arc.radius == 9.15
+
+    def test_left_penalty_mark(self, pitch: HorizontalPitch) -> None:
+        mark = pitch.left_penalty_mark
+        assert mark.center == Point(11, 34)
+        assert mark.radius == 0.1
+
 
 class TestVerticalPitch:
     @pytest.fixture(scope="class")
