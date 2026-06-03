@@ -42,10 +42,15 @@ class Line:
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Line):
             return False
-        return self.coords == value.coords
+        normal_match = self._start == value.start and self._end == value.end
+        reverse_match = self._start == value.end and self._end == value.start
+        return normal_match or reverse_match
 
     def __repr__(self) -> str:
         return f"Line(start={self._start}, end={self._end})"
+
+    def is_strictly_equal(self, other: "Line") -> bool:
+        return self.coords == other.coords
 
     @property
     def start(self) -> Point:

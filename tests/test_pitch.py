@@ -33,8 +33,13 @@ class TestLine:
 
     def test_eq(self, line: Line) -> None:
         assert line == Line(Point(0, 0), Point(100, 0))
+        assert line == Line(Point(100, 0), Point(0, 0))
         assert line != Line(Point(0, 0), Point(50, 0))
         assert line != 2
+
+    def test_strictly_equal(self, line: Line) -> None:
+        assert line.is_strictly_equal(Line(Point(0, 0), Point(100, 0)))
+        assert not line.is_strictly_equal(Line(Point(100, 0), Point(0, 0)))
 
     def test_length(self, line: Line) -> None:
         assert line.length == 100
