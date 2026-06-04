@@ -30,6 +30,9 @@ class Point:
     def coords(self) -> tuple[float, float]:
         return (self._x, self._y)
 
+    def rotate(self, angle: float, origin: "Point") -> "Point":
+        raise NotImplementedError
+
     def reflect(self, pivot: "Line") -> "Point":
         raise NotImplementedError
 
@@ -82,6 +85,9 @@ class Line:
     def is_vertical(self) -> bool:
         raise NotImplementedError
 
+    def rotate(self, angle: float, origin: Point) -> Point:
+        raise NotImplementedError
+
     def reflect(self, pivot: "Line") -> "Line":
         raise NotImplementedError
 
@@ -106,6 +112,9 @@ class Circle:
     @property
     def radius(self) -> float:
         return self._radius
+
+    def rotate(self, angle: float, origin: Point) -> Point:
+        raise NotImplementedError
 
     def reflect(self, pivot: "Line") -> "Circle":
         raise NotImplementedError
@@ -191,6 +200,9 @@ class Rectangle:
             self.top_left.coords,
             self.top_right.coords,
         )
+
+    def rotate(self, angle: float, origin: Point) -> Point:
+        raise NotImplementedError
 
     def reflect(self, pivot: "Line") -> "Rectangle":
         raise NotImplementedError
