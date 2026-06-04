@@ -22,6 +22,12 @@ class TestPoint:
         assert point != Point(2, 2)
         assert point != (1, 1)
 
+    def test_lt(self, point: Point) -> None:
+        assert point < Point(2, 1)
+        assert point < Point(1, 2)
+        with pytest.raises(TypeError):
+            assert point < 2
+
     def test_coords(self, point: Point) -> None:
         assert point.coords == (1, 1)
 

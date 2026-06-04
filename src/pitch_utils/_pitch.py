@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import total_ordering
 from typing import Literal
 
 from ._markings import Markings
 
 
+@total_ordering
 class Point:
     def __init__(self, x: float, y: float):
         self._x = x
@@ -14,6 +16,11 @@ class Point:
         if not isinstance(value, Point):
             return False
         return self.coords == value.coords
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, Point):
+            return NotImplemented
+        return self.coords < other.coords
 
     def __repr__(self) -> str:
         return f"Point(x={self._x}, y={self._y})"
