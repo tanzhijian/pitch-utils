@@ -1,15 +1,13 @@
-from ._coordinates import Locations
-from ._markings import MarkingDimensions, Markings
-from ._pitch import (
+from ._coordinates import (
     Circle,
     CoordinateSystem,
-    HorizontalPitch,
     Line,
-    Pitch,
+    Locations,
     Point,
     Rectangle,
-    VerticalPitch,
 )
+from ._markings import MarkingDimensions, Markings
+from ._pitch import HorizontalPitch, Pitch, VerticalPitch
 from ._transforms import scale
 
 __all__ = [
