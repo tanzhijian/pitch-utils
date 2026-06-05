@@ -147,27 +147,27 @@ class Pitch(ABC):
     @property
     def _penalty_arc_2(self) -> Circle:
         """Right or top"""
-        return self._penalty_arc_1.reflect(self.halfway_line)
+        return self._coord_sys.reflect(self._penalty_arc_1, self.halfway_line)
 
     @property
     def _penalty_area_2(self) -> Rectangle:
         """Right or top"""
-        return self._penalty_area_1.reflect(self.halfway_line)
+        return self._coord_sys.reflect(self._penalty_area_1, self.halfway_line)
 
     @property
     def _penalty_mark_2(self) -> Circle:
         """Right or top"""
-        return self._penalty_mark_1.reflect(self.halfway_line)
+        return self._coord_sys.reflect(self._penalty_mark_1, self.halfway_line)
 
     @property
     def _goal_area_2(self) -> Rectangle:
         """Right or top"""
-        return self._goal_area_1.reflect(self.halfway_line)
+        return self._coord_sys.reflect(self._goal_area_1, self.halfway_line)
 
     @property
     def _goal_2(self) -> Rectangle:
         """Right or top"""
-        return self._goal_1.reflect(self.halfway_line)
+        return self._coord_sys.reflect(self._goal_1, self.halfway_line)
 
 
 class HorizontalPitch(Pitch):

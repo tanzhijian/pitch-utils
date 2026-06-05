@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import total_ordering
-from typing import Iterator, Literal
+from typing import Iterator, Literal, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -73,12 +73,6 @@ class Point:
     def coords(self) -> tuple[float, float]:
         return (self._x, self._y)
 
-    def rotate(self, angle: float, origin: "Point") -> "Point":
-        raise NotImplementedError
-
-    def reflect(self, pivot: "Line") -> "Point":
-        raise NotImplementedError
-
 
 class Line:
     def __init__(self, start: Point, end: Point) -> None:
@@ -124,16 +118,6 @@ class Line:
     def coords(self) -> tuple[tuple[float, float], tuple[float, float]]:
         return (self.start.coords, self.end.coords)
 
-    @property
-    def is_vertical(self) -> bool:
-        raise NotImplementedError
-
-    def rotate(self, angle: float, origin: Point) -> Point:
-        raise NotImplementedError
-
-    def reflect(self, pivot: "Line") -> "Line":
-        raise NotImplementedError
-
 
 class Circle:
     def __init__(self, center: Point, radius: float) -> None:
@@ -155,12 +139,6 @@ class Circle:
     @property
     def radius(self) -> float:
         return self._radius
-
-    def rotate(self, angle: float, origin: Point) -> Point:
-        raise NotImplementedError
-
-    def reflect(self, pivot: "Line") -> "Circle":
-        raise NotImplementedError
 
 
 class Rectangle:
@@ -216,12 +194,6 @@ class Rectangle:
             self._point_4.coords,
         )
 
-    def rotate(self, angle: float, origin: Point) -> Point:
-        raise NotImplementedError
-
-    def reflect(self, pivot: "Line") -> "Rectangle":
-        raise NotImplementedError
-
 
 @dataclass(frozen=True)
 class CoordinateSystem:
@@ -234,3 +206,21 @@ class CoordinateSystem:
 
     def shift_y(self, y: float, offset: float) -> float:
         return y + offset if self.y_dir == "up" else y - offset
+
+    @overload
+    def reflect(self, geom: Point, pivot: Line) -> Point: ...
+
+    @overload
+    def reflect(self, geom: Line, pivot: Line) -> Line: ...
+
+    @overload
+    def reflect(self, geom: Circle, pivot: Line) -> Circle: ...
+
+    @overload
+    def reflect(self, geom: Rectangle, pivot: Line) -> Rectangle: ...
+
+    def reflect(self, geom, pivot):
+        raise NotImplementedError
+
+    def rotate(self, geom, angle: float, origin: "Point") -> "Point":
+        raise NotImplementedError
