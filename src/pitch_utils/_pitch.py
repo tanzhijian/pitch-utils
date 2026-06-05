@@ -128,15 +128,27 @@ class Circle:
 
 
 class Rectangle:
-    def __init__(
-        self,
-        bottom_left: Point,
-        width: float,
-        height: float,
-    ) -> None:
-        self._bottom_left = bottom_left
-        self._width = width
-        self._height = height
+    def __init__(self, min_point: Point, max_point: Point) -> None:
+        self._min_point = min_point
+        self._max_point = max_point
+        self._point_1 = min_point
+        self._point_4 = max_point
+
+    @property
+    def _point_2(self) -> Point:
+        return Point(x=self._max_point.x, y=self._min_point.y)
+
+    @property
+    def _point_3(self) -> Point:
+        return Point(x=self._min_point.x, y=self._max_point.y)
+
+    @property
+    def min_point(self) -> Point:
+        return self._min_point
+
+    @property
+    def max_point(self) -> Point:
+        return self._max_point
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Rectangle):
@@ -144,53 +156,13 @@ class Rectangle:
         return self.coords == value.coords
 
     def __repr__(self) -> str:
-        return (
-            f"Rectangle(bottom_left={self._bottom_left}, "
-            f"width={self._width}, height={self._height})"
-        )
+        return f"Rectangle(coords={self.coords})"
 
-    @property
-    def width(self) -> float:
-        return self._width
-
-    @property
-    def height(self) -> float:
-        return self._height
-
-    @property
-    def bottom_left(self) -> Point:
-        return self._bottom_left
-
-    @property
-    def bottom_right(self) -> Point:
-        return Point(self._bottom_left.x + self._width, self._bottom_left.y)
-
-    @property
-    def top_left(self) -> Point:
-        return Point(self._bottom_left.x, self._bottom_left.y + self._height)
-
-    @property
-    def top_right(self) -> Point:
+    def center(self) -> Point:
         return Point(
-            self._bottom_left.x + self._width,
-            self._bottom_left.y + self._height,
+            x=(self._min_point.x + self._max_point.x) / 2,
+            y=(self._min_point.y + self._max_point.y) / 2,
         )
-
-    @property
-    def left(self) -> Line:
-        return Line(self._bottom_left, self.top_left)
-
-    @property
-    def right(self) -> Line:
-        return Line(self.bottom_right, self.top_right)
-
-    @property
-    def bottom(self) -> Line:
-        return Line(self._bottom_left, self.bottom_right)
-
-    @property
-    def top(self) -> Line:
-        return Line(self.top_left, self.top_right)
 
     @property
     def coords(
@@ -202,10 +174,10 @@ class Rectangle:
         tuple[float, float],
     ]:
         return (
-            self._bottom_left.coords,
-            self.bottom_right.coords,
-            self.top_left.coords,
-            self.top_right.coords,
+            self._point_1.coords,
+            self._point_2.coords,
+            self._point_3.coords,
+            self._point_4.coords,
         )
 
     def rotate(self, angle: float, origin: Point) -> Point:
@@ -239,14 +211,14 @@ class Pitch(ABC):
         self._touch_line_range = touch_line_range
         self._goal_line_range = goal_line_range
 
+        touch_line = abs(touch_line_range[1] - touch_line_range[0])
+        goal_line = abs(goal_line_range[1] - goal_line_range[0])
         self._markings = (
             markings
             if markings is not None
-            else Markings(
-                touch_line=self.touch_line.length,
-                goal_line=self.goal_line.length,
-            )
+            else Markings(touch_line=touch_line, goal_line=goal_line)
         )
+
         self._coord_sys = (
             coord_sys if coord_sys is not None else self._build_coord_sys()
         )
@@ -258,7 +230,7 @@ class Pitch(ABC):
     def __eq__(self, value: object) -> bool:
         if type(value) is not type(self):
             return False
-        return self.bounds == value.bounds and self._markings == value.markings
+        return self.coords == value.coords and self.markings == value.markings
 
     @property
     def coord_sys(self) -> CoordinateSystem:
@@ -270,18 +242,55 @@ class Pitch(ABC):
 
     @property
     @abstractmethod
-    def touch_line(self) -> Line:
+    def bottom_left(self) -> Point:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def goal_line(self) -> Line:
+    def bottom_right(self) -> Point:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def bounds(self) -> Rectangle:
+    def top_left(self) -> Point:
         raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def top_right(self) -> Point:
+        raise NotImplementedError
+
+    @property
+    def coords(
+        self,
+    ) -> tuple[
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+    ]:
+        return (
+            self.bottom_left.coords,
+            self.bottom_right.coords,
+            self.top_left.coords,
+            self.top_right.coords,
+        )
+
+    @property
+    def left(self) -> Line:
+        return Line(self.bottom_left, self.top_left)
+
+    @property
+    def right(self) -> Line:
+        return Line(self.bottom_right, self.top_right)
+
+    @property
+    def bottom(self) -> Line:
+        return Line(self.bottom_left, self.bottom_right)
+
+    @property
+    def top(self) -> Line:
+        return Line(self.top_left, self.top_right)
 
     @property
     def centre_circle(self) -> Circle:
@@ -361,54 +370,46 @@ class HorizontalPitch(Pitch):
     def _build_coord_sys(self) -> CoordinateSystem:
         x_dir = (
             "right"
-            if self.touch_line.end.x > self.touch_line.start.x
+            if self._touch_line_range[1] > self._touch_line_range[0]
             else "left"
         )
         y_dir = (
-            "up" if self.goal_line.end.y > self.goal_line.start.y else "down"
+            "up"
+            if self._goal_line_range[1] > self._goal_line_range[0]
+            else "down"
         )
         return CoordinateSystem(origin=(0, 0), x_dir=x_dir, y_dir=y_dir)
 
     @property
-    def touch_line(self) -> Line:
-        return Line(
-            start=Point(
-                x=self._touch_line_range[0], y=self._goal_line_range[0]
-            ),
-            end=Point(x=self._touch_line_range[1], y=self._goal_line_range[0]),
-        )
+    def bottom_left(self) -> Point:
+        return Point(self._touch_line_range[0], self._goal_line_range[0])
 
     @property
-    def goal_line(self) -> Line:
-        return Line(
-            start=Point(
-                x=self._touch_line_range[0], y=self._goal_line_range[0]
-            ),
-            end=Point(x=self._touch_line_range[0], y=self._goal_line_range[1]),
-        )
+    def bottom_right(self) -> Point:
+        return Point(self._touch_line_range[1], self._goal_line_range[0])
 
     @property
-    def bounds(self) -> Rectangle:
-        return Rectangle(
-            bottom_left=Point(self.touch_line.start.x, self.goal_line.start.y),
-            width=self.touch_line.length,
-            height=self.goal_line.length,
-        )
+    def top_left(self) -> Point:
+        return Point(self._touch_line_range[0], self._goal_line_range[1])
+
+    @property
+    def top_right(self) -> Point:
+        return Point(self._touch_line_range[1], self._goal_line_range[1])
 
     @property
     def halfway_line(self) -> Line:
         return Line(
-            start=self.bounds.bottom.center,
-            end=self.bounds.top.center,
+            start=self.bottom.center,
+            end=self.top.center,
         )
 
     @property
     def _penalty_mark_point_1(self) -> Point:
         return Point(
             self._coord_sys.shift_x(
-                self.bounds.bottom_left.x, self._markings.penalty_mark_distance
+                self.bottom_left.x, self._markings.penalty_mark_distance
             ),
-            self.bounds.left.center.y,
+            self.left.center.y,
         )
 
     @property
@@ -453,45 +454,37 @@ class VerticalPitch(Pitch):
     def _build_coord_sys(self) -> CoordinateSystem:
         x_dir = (
             "right"
-            if self.goal_line.end.x > self.goal_line.start.x
+            if self._goal_line_range[1] > self._goal_line_range[0]
             else "left"
         )
         y_dir = (
-            "up" if self.touch_line.end.y > self.touch_line.start.y else "down"
+            "up"
+            if self._touch_line_range[1] > self._touch_line_range[0]
+            else "down"
         )
         return CoordinateSystem(origin=(0, 0), x_dir=x_dir, y_dir=y_dir)
 
     @property
-    def touch_line(self) -> Line:
-        return Line(
-            start=Point(
-                x=self._goal_line_range[0], y=self._touch_line_range[0]
-            ),
-            end=Point(x=self._goal_line_range[0], y=self._touch_line_range[1]),
-        )
+    def bottom_left(self) -> Point:
+        return Point(self._goal_line_range[0], self._touch_line_range[0])
 
     @property
-    def goal_line(self) -> Line:
-        return Line(
-            start=Point(
-                x=self._goal_line_range[0], y=self._touch_line_range[0]
-            ),
-            end=Point(x=self._goal_line_range[1], y=self._touch_line_range[0]),
-        )
+    def bottom_right(self) -> Point:
+        return Point(self._goal_line_range[1], self._touch_line_range[0])
 
     @property
-    def bounds(self) -> Rectangle:
-        return Rectangle(
-            bottom_left=Point(self.goal_line.start.x, self.touch_line.start.y),
-            width=self.goal_line.length,
-            height=self.touch_line.length,
-        )
+    def top_left(self) -> Point:
+        return Point(self._goal_line_range[0], self._touch_line_range[1])
+
+    @property
+    def top_right(self) -> Point:
+        return Point(self._goal_line_range[1], self._touch_line_range[1])
 
     @property
     def halfway_line(self) -> Line:
         return Line(
-            start=self.bounds.left.center,
-            end=self.bounds.right.center,
+            start=self.left.center,
+            end=self.right.center,
         )
 
     @property

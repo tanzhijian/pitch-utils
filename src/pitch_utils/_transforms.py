@@ -10,7 +10,7 @@ def scale(
 ) -> Locations:
     locs = Locations(locations)
     transformed_arr = locs._arr * (
-        to_pitch.bounds.width / from_pitch.bounds.width,
-        to_pitch.bounds.height / from_pitch.bounds.height,
+        to_pitch.bottom.length / from_pitch.bottom.length,
+        to_pitch.left.length / from_pitch.left.length,
     )
     return Locations(transformed_arr)
