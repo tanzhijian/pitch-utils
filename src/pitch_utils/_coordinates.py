@@ -142,40 +142,34 @@ class Circle:
 
 
 class Rectangle:
-    def __init__(self, min_point: Point, max_point: Point) -> None:
-        self._min_point = min_point
-        self._max_point = max_point
-        self._point_1 = min_point
-        self._point_4 = max_point
+    def __init__(self, p1: Point, p2: Point) -> None:
+        if p1.x == p2.x or p1.y == p2.y:
+            raise ValueError(
+                "Points cannot be on the same vertical or horizontal line"
+            )
+        self._p1 = p1
+        self._p2 = p2
 
     @property
-    def _point_2(self) -> Point:
-        return Point(x=self._max_point.x, y=self._min_point.y)
+    def _p3(self) -> Point:
+        return Point(x=self._p1.x, y=self._p2.y)
 
     @property
-    def _point_3(self) -> Point:
-        return Point(x=self._min_point.x, y=self._max_point.y)
+    def _p4(self) -> Point:
+        return Point(x=self._p2.x, y=self._p1.y)
 
     @property
     def min_point(self) -> Point:
-        return self._min_point
+        return Point(
+            x=min(self._p1.x, self._p2.x),
+            y=min(self._p1.y, self._p2.y),
+        )
 
     @property
     def max_point(self) -> Point:
-        return self._max_point
-
-    def __eq__(self, value: object) -> bool:
-        if not isinstance(value, Rectangle):
-            return False
-        return self.coords == value.coords
-
-    def __repr__(self) -> str:
-        return f"Rectangle(coords={self.coords})"
-
-    def center(self) -> Point:
         return Point(
-            x=(self._min_point.x + self._max_point.x) / 2,
-            y=(self._min_point.y + self._max_point.y) / 2,
+            x=max(self._p1.x, self._p2.x),
+            y=max(self._p1.y, self._p2.y),
         )
 
     @property
@@ -187,12 +181,29 @@ class Rectangle:
         tuple[float, float],
         tuple[float, float],
     ]:
-        return (
-            self._point_1.coords,
-            self._point_2.coords,
-            self._point_3.coords,
-            self._point_4.coords,
+        s1, s2, s3, s4 = sorted(
+            (
+                self._p1.coords,
+                self._p2.coords,
+                self._p3.coords,
+                self._p4.coords,
+            )
         )
+        return (s1, s2, s3, s4)
+
+    def center(self) -> Point:
+        return Point(
+            x=(self._p1.x + self._p2.x) / 2,
+            y=(self._p1.y + self._p2.y) / 2,
+        )
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Rectangle):
+            return False
+        return self.coords == value.coords
+
+    def __repr__(self) -> str:
+        return f"Rectangle(coords={self.coords})"
 
 
 @dataclass(frozen=True)

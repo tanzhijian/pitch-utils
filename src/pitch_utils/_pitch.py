@@ -241,7 +241,7 @@ class HorizontalPitch(Pitch):
     @property
     def _penalty_area_1(self) -> Rectangle:
         return Rectangle(
-            min_point=Point(
+            p1=Point(
                 x=self.bottom_left.x,
                 y=(
                     self.left.center.y
@@ -249,7 +249,7 @@ class HorizontalPitch(Pitch):
                     - self._markings.penalty_area_length
                 ),
             ),
-            max_point=Point(
+            p2=Point(
                 self.bottom_left.x + self._markings.penalty_area_length,
                 y=(
                     self.left.center.y
@@ -265,15 +265,22 @@ class HorizontalPitch(Pitch):
 
     @property
     def _goal_area_1(self) -> Rectangle:
-        y = (
-            self.left.center.y
-            - self._markings.goal_width / 2
-            - self._markings.goal_area_length
-        )
         return Rectangle(
-            min_point=Point(x=self.bottom_left.x, y=y),
-            max_point=Point(
-                x=self.bottom_left.x + self._markings.goal_area_length, y=y
+            p1=Point(
+                x=self.bottom_left.x,
+                y=(
+                    self.left.center.y
+                    - self._markings.goal_width / 2
+                    - self._markings.goal_area_length
+                ),
+            ),
+            p2=Point(
+                x=self.bottom_left.x + self._markings.goal_area_length,
+                y=(
+                    self.left.center.y
+                    + self._markings.goal_width / 2
+                    + self._markings.goal_area_length
+                ),
             ),
         )
 

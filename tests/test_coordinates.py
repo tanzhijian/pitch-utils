@@ -70,7 +70,7 @@ class TestCircle:
 class TestRectangle:
     @pytest.fixture(scope="class")
     def rectangle(self) -> Rectangle:
-        return Rectangle(min_point=Point(0, 0), max_point=Point(100, 60))
+        return Rectangle(p1=Point(0, 0), p2=Point(100, 60))
 
     def test_eq(self, rectangle: Rectangle) -> None:
         assert rectangle == Rectangle(Point(0, 0), Point(100, 60))
@@ -78,4 +78,4 @@ class TestRectangle:
         assert rectangle != 2
 
     def test_coords(self, rectangle: Rectangle) -> None:
-        assert rectangle.coords == ((0, 0), (100, 0), (0, 60), (100, 60))
+        assert rectangle.coords == ((0, 0), (0, 60), (100, 0), (100, 60))

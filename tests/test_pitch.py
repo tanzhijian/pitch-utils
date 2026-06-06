@@ -99,9 +99,18 @@ class TestHorizontalPitch:
         area = pitch.left_penalty_area
         assert area.coords == (
             (0, 13.84),
-            (16.5, 13.84),
             (0, 54.16),
+            (16.5, 13.84),
             (16.5, 54.16),
+        )
+
+    def test_left_goal_area(self, pitch: HorizontalPitch) -> None:
+        area = pitch.left_goal_area
+        assert area.coords == (
+            (0, 24.84),
+            (0, 43.16),
+            (5.5, 24.84),
+            (5.5, 43.16),
         )
 
 
