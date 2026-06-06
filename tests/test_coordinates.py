@@ -2,6 +2,7 @@ import pytest
 
 from pitch_utils import (
     Circle,
+    CoordinateSystem,
     Line,
     Point,
     Rectangle,
@@ -79,3 +80,40 @@ class TestRectangle:
 
     def test_coords(self, rectangle: Rectangle) -> None:
         assert rectangle.coords == ((0, 0), (0, 60), (100, 0), (100, 60))
+
+
+class TestDefaultCoordSys:
+    @pytest.fixture(scope="class")
+    def cs(self) -> CoordinateSystem:
+        return CoordinateSystem(origin=(0, 0), x_dir="right", y_dir="up")
+
+    def test_eq(self, cs: CoordinateSystem) -> None:
+        assert cs == CoordinateSystem(origin=(0, 0), x_dir="right", y_dir="up")
+        assert cs != CoordinateSystem(origin=(1, 0), x_dir="right", y_dir="up")
+        assert cs != CoordinateSystem(origin=(0, 0), x_dir="left", y_dir="up")
+        assert cs != CoordinateSystem(
+            origin=(0, 0), x_dir="right", y_dir="down"
+        )
+        assert cs != 2
+
+    def test_shift_x(self, cs: CoordinateSystem) -> None:
+        assert cs.shift_x(1, 10) == 11
+        assert cs.shift_x(1, 10, 1, op="-") == -10
+
+    def test_shift_y(self, cs: CoordinateSystem) -> None:
+        assert cs.shift_y(1, 10) == 11
+        assert cs.shift_y(1, 10, 1, op="-") == -10
+
+
+class TestLeftDownCoordSys:
+    @pytest.fixture
+    def cs(self) -> CoordinateSystem:
+        return CoordinateSystem(origin=(0, 0), x_dir="left", y_dir="down")
+
+    def test_shift_x(self, cs: CoordinateSystem) -> None:
+        assert cs.shift_x(1, 10) == -9
+        assert cs.shift_x(1, 10, 1, op="-") == 12
+
+    def test_shift_y(self, cs: CoordinateSystem) -> None:
+        assert cs.shift_y(1, 10) == -9
+        assert cs.shift_y(1, 10, 1, op="-") == 12

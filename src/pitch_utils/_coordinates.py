@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from functools import total_ordering
 from typing import Iterator, Literal, overload
 
@@ -206,17 +205,63 @@ class Rectangle:
         return f"Rectangle(coords={self.coords})"
 
 
-@dataclass(frozen=True)
 class CoordinateSystem:
-    origin: tuple[float, float]
-    x_dir: Literal["left", "right"]
-    y_dir: Literal["up", "down"]
+    def __init__(
+        self,
+        origin: tuple[float, float],
+        x_dir: Literal["left", "right"],
+        y_dir: Literal["up", "down"],
+    ) -> None:
+        self._origin = origin
+        self._x_dir = x_dir
+        self._y_dir = y_dir
 
-    def shift_x(self, x: float, offset: float) -> float:
-        return x + offset if self.x_dir == "right" else x - offset
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, CoordinateSystem):
+            return False
+        return (
+            self._origin == value._origin
+            and self._x_dir == value._x_dir
+            and self._y_dir == value._y_dir
+        )
 
-    def shift_y(self, y: float, offset: float) -> float:
-        return y + offset if self.y_dir == "up" else y - offset
+    def __repr__(self) -> str:
+        return (
+            f"CoordinateSystem(origin={self._origin}, "
+            f"x_dir='{self._x_dir}', y_dir='{self._y_dir}')"
+        )
+
+    @property
+    def origin(self) -> tuple[float, float]:
+        return self._origin
+
+    @property
+    def x_dir(self) -> Literal["left", "right"]:
+        return self._x_dir
+
+    @property
+    def y_dir(self) -> Literal["up", "down"]:
+        return self._y_dir
+
+    def shift_x(
+        self,
+        x: float,
+        *offsets: float,
+        op: Literal["+", "-"] = "+",
+    ) -> float:
+        op_sign = 1 if op == "+" else -1
+        dir_sign = 1 if self._x_dir == "right" else -1
+        return x + (sum(offsets) * dir_sign * op_sign)
+
+    def shift_y(
+        self,
+        y: float,
+        *offsets: float,
+        op: Literal["+", "-"] = "+",
+    ) -> float:
+        op_sign = 1 if op == "+" else -1
+        dir_sign = 1 if self._y_dir == "up" else -1
+        return y + (sum(offsets) * dir_sign * op_sign)
 
     @overload
     def reflect(self, geom: Point, pivot: Line) -> Point: ...

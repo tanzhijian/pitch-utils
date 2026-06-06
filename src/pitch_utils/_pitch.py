@@ -243,18 +243,19 @@ class HorizontalPitch(Pitch):
         return Rectangle(
             p1=Point(
                 x=self.bottom_left.x,
-                y=(
-                    self.left.center.y
-                    - self._markings.goal_width / 2
-                    - self._markings.penalty_area_length
+                y=self._coord_sys.shift_y(
+                    self.left.center.y,
+                    self._markings.goal_width / 2,
+                    self._markings.penalty_area_length,
+                    op="-",
                 ),
             ),
             p2=Point(
                 self.bottom_left.x + self._markings.penalty_area_length,
-                y=(
-                    self.left.center.y
-                    + self._markings.goal_width / 2
-                    + self._markings.penalty_area_length
+                y=self._coord_sys.shift_y(
+                    self.left.center.y,
+                    self._markings.goal_width / 2,
+                    self._markings.penalty_area_length,
                 ),
             ),
         )
@@ -268,18 +269,19 @@ class HorizontalPitch(Pitch):
         return Rectangle(
             p1=Point(
                 x=self.bottom_left.x,
-                y=(
-                    self.left.center.y
-                    - self._markings.goal_width / 2
-                    - self._markings.goal_area_length
+                y=self._coord_sys.shift_y(
+                    self.left.center.y,
+                    self._markings.goal_width / 2,
+                    self._markings.goal_area_length,
+                    op="-",
                 ),
             ),
             p2=Point(
                 x=self.bottom_left.x + self._markings.goal_area_length,
-                y=(
-                    self.left.center.y
-                    + self._markings.goal_width / 2
-                    + self._markings.goal_area_length
+                y=self._coord_sys.shift_y(
+                    self.left.center.y,
+                    self._markings.goal_width / 2,
+                    self._markings.goal_area_length,
                 ),
             ),
         )
