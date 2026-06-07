@@ -113,6 +113,14 @@ class TestHorizontalPitch:
             (5.5, 43.16),
         )
 
+    def test_left_goal(self, pitch: HorizontalPitch) -> None:
+        assert pitch.left_goal.coords == (
+            (-2.44, 30.34),
+            (-2.44, 37.66),
+            (0, 30.34),
+            (0, 37.66)
+        )
+
 
 class TestVerticalPitch:
     @pytest.fixture(scope="class")
