@@ -318,6 +318,26 @@ class HorizontalPitch(Pitch):
     def left_goal(self) -> Rectangle:
         return self._goal_1
 
+    @property
+    def right_penalty_arc(self) -> Circle:
+        return self._penalty_arc_2
+
+    @property
+    def right_penalty_area(self) -> Rectangle:
+        return self._penalty_area_2
+
+    @property
+    def right_penalty_mark(self) -> Circle:
+        return self._penalty_mark_2
+
+    @property
+    def right_goal_area(self) -> Rectangle:
+        return self._goal_area_2
+
+    @property
+    def right_goal(self) -> Rectangle:
+        return self._goal_2
+
     def to_vertical(self) -> "VerticalPitch":
         raise NotImplementedError
 

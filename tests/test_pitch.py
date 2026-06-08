@@ -118,7 +118,43 @@ class TestHorizontalPitch:
             (-2.44, 30.34),
             (-2.44, 37.66),
             (0, 30.34),
-            (0, 37.66)
+            (0, 37.66),
+        )
+
+    def test_right_penalty_arc(self, pitch: HorizontalPitch) -> None:
+        arc = pitch.right_penalty_arc
+        assert arc.center == Point(94, 34)
+        assert arc.radius == 9.15
+
+    def test_right_penalty_area(self, pitch: HorizontalPitch) -> None:
+        area = pitch.right_penalty_area
+        assert area.coords == (
+            (88.5, 13.84),
+            (88.5, 54.16),
+            (105, 13.84),
+            (105, 54.16),
+        )
+
+    def test_right_penalty_mark(self, pitch: HorizontalPitch) -> None:
+        mark = pitch.right_penalty_mark
+        assert mark.center == Point(94, 34)
+        assert mark.radius == 0.1
+
+    def test_right_goal_area(self, pitch: HorizontalPitch) -> None:
+        area = pitch.right_goal_area
+        assert area.coords == (
+            (99.5, 24.84),
+            (99.5, 43.16),
+            (105, 24.84),
+            (105, 43.16),
+        )
+
+    def test_right_goal(self, pitch: HorizontalPitch) -> None:
+        assert pitch.right_goal.coords == (
+            (105, 30.34),
+            (105, 37.66),
+            (107.44, 30.34),
+            (107.44, 37.66),
         )
 
 
