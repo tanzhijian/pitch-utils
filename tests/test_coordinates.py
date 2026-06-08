@@ -104,6 +104,27 @@ class TestDefaultCoordSys:
         assert cs.shift_y(1, 10) == 11
         assert cs.shift_y(1, 10, 1, op="-") == -10
 
+    def test_reflect_point(self, cs: CoordinateSystem) -> None:
+        pivot = Line(Point(0, -1), Point(0, 1))
+        assert cs.reflect(Point(1, 2), pivot) == Point(-1, 2)
+
+    def test_reflect_line(self, cs: CoordinateSystem) -> None:
+        pivot = Line(Point(0, -1), Point(0, 1))
+        reflected = cs.reflect(Line(Point(1, 0), Point(3, 0)), pivot)
+        assert reflected.is_strictly_equal(Line(Point(-1, 0), Point(-3, 0)))
+
+    def test_reflect_circle(self, cs: CoordinateSystem) -> None:
+        pivot = Line(Point(0, -1), Point(0, 1))
+        assert cs.reflect(Circle(Point(2, 0), 3), pivot) == Circle(
+            Point(-2, 0), 3
+        )
+
+    def test_reflect_rectangle(self, cs: CoordinateSystem) -> None:
+        pivot = Line(Point(0, -1), Point(0, 1))
+        assert cs.reflect(
+            Rectangle(Point(1, 1), Point(3, 2)), pivot
+        ) == Rectangle(Point(-3, 1), Point(-1, 2))
+
     def test_rotate_point(self, cs: CoordinateSystem) -> None:
         assert cs.rotate(Point(1, 0), 90, Point(0, 0)) == Point(0, 1)
         assert cs.rotate(Point(-1, 0), 180, Point(0, 0)) == Point(1, 0)

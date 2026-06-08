@@ -269,6 +269,59 @@ class CoordinateSystem:
         op_sign = 1 if op == "+" else -1
         return y + (sum(offsets) * self._y_sign * op_sign)
 
+    def _normalize_value(self, value: float) -> float:
+        rounded = round(value, 2)
+        if np.isclose(value, rounded):
+            value = rounded
+        return float(value)
+
+    def _reflect_point(self, geom: Point, pivot: Line) -> Point:
+        pivot_dx = pivot.end.x - pivot.start.x
+        pivot_dy = pivot.end.y - pivot.start.y
+        pivot_length_sq = (pivot_dx**2) + (pivot_dy**2)
+
+        if pivot_length_sq == 0:
+            raise ValueError("Pivot line cannot have zero length")
+
+        start_to_point_x = geom.x - pivot.start.x
+        start_to_point_y = geom.y - pivot.start.y
+        projection_scale = (
+            (start_to_point_x * pivot_dx) + (start_to_point_y * pivot_dy)
+        ) / pivot_length_sq
+        projection_x = pivot.start.x + (projection_scale * pivot_dx)
+        projection_y = pivot.start.y + (projection_scale * pivot_dy)
+
+        reflected_x = (2 * projection_x) - geom.x
+        reflected_y = (2 * projection_y) - geom.y
+        return Point(
+            x=self._normalize_value(reflected_x),
+            y=self._normalize_value(reflected_y),
+        )
+
+    def _reflect_line(self, geom: Line, pivot: Line) -> Line:
+        return Line(
+            start=self._reflect_point(geom.start, pivot),
+            end=self._reflect_point(geom.end, pivot),
+        )
+
+    def _reflect_circle(self, geom: Circle, pivot: Line) -> Circle:
+        return Circle(
+            center=self._reflect_point(geom.center, pivot),
+            radius=geom.radius,
+        )
+
+    def _reflect_rectangle(self, geom: Rectangle, pivot: Line) -> Rectangle:
+        reflected_coords = [
+            self._reflect_point(Point(x, y), pivot).coords
+            for x, y in geom.coords
+        ]
+        xs = [x for x, _ in reflected_coords]
+        ys = [y for _, y in reflected_coords]
+        return Rectangle(
+            p1=Point(min(xs), min(ys)),
+            p2=Point(max(xs), max(ys)),
+        )
+
     @overload
     def reflect(self, geom: Point, pivot: Line) -> Point: ...
 
@@ -282,7 +335,16 @@ class CoordinateSystem:
     def reflect(self, geom: Rectangle, pivot: Line) -> Rectangle: ...
 
     def reflect(self, geom, pivot):
-        raise NotImplementedError
+        if isinstance(geom, Point):
+            return self._reflect_point(geom, pivot)
+        elif isinstance(geom, Line):
+            return self._reflect_line(geom, pivot)
+        elif isinstance(geom, Circle):
+            return self._reflect_circle(geom, pivot)
+        elif isinstance(geom, Rectangle):
+            return self._reflect_rectangle(geom, pivot)
+        else:
+            raise TypeError("Unsupported geometry type")
 
     def _rotate_point(self, geom: Point, angle: float, origin: Point) -> Point:
         translated_x = geom.x - origin.x
@@ -302,12 +364,10 @@ class CoordinateSystem:
         x = origin.x + (rotated_x * self._x_sign)
         y = origin.y + (rotated_y * self._y_sign)
 
-        if np.isclose(x, (rx := round(x, 2))):
-            x = rx
-        if np.isclose(y, (ry := round(y, 2))):
-            y = ry
-
-        return Point(x=float(x), y=float(y))
+        return Point(
+            x=self._normalize_value(x),
+            y=self._normalize_value(y),
+        )
 
     def _rotate_line(self, geom: Line, angle: float, origin: Point) -> Line:
         return Line(
