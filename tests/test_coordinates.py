@@ -97,10 +97,12 @@ class TestDefaultCoordSys:
         assert cs != 2
 
     def test_shift_x(self, cs: CoordinateSystem) -> None:
+        assert cs.shift_x(1) == 1
         assert cs.shift_x(1, 10) == 11
         assert cs.shift_x(1, 10, 1, op="-") == -10
 
     def test_shift_y(self, cs: CoordinateSystem) -> None:
+        assert cs.shift_y(1, op="-")
         assert cs.shift_y(1, 10) == 11
         assert cs.shift_y(1, 10, 1, op="-") == -10
 

@@ -292,7 +292,31 @@ class HorizontalPitch(Pitch):
 
     @property
     def _goal_1(self) -> Rectangle:
-        raise NotImplementedError
+        return Rectangle(
+            p1=Point(
+                x=self._coord_sys.shift_x(
+                    self.bottom_left.x,
+                    self._markings.goal_height,
+                    op="-",
+                ),
+                y=self._coord_sys.shift_y(
+                    self.left.center.y,
+                    self._markings.goal_width / 2,
+                    op="-",
+                ),
+            ),
+            p2=Point(
+                x=self.bottom_left.x,
+                y=self._coord_sys.shift_y(
+                    self.left.center.y,
+                    self._markings.goal_width / 2,
+                ),
+            ),
+        )
+
+    @property
+    def left_goal(self) -> Rectangle:
+        return self._goal_1
 
     def to_vertical(self) -> "VerticalPitch":
         raise NotImplementedError
