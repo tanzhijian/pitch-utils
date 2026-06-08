@@ -105,16 +105,27 @@ class TestDefaultCoordSys:
         assert cs.shift_y(1, 10, 1, op="-") == -10
 
     def test_rotate_point(self, cs: CoordinateSystem) -> None:
-        pass
+        assert cs.rotate(Point(1, 0), 90, Point(0, 0)) == Point(0, 1)
+        assert cs.rotate(Point(-1, 0), 180, Point(0, 0)) == Point(1, 0)
 
     def test_rotate_line(self, cs: CoordinateSystem) -> None:
-        pass
+        rotated = cs.rotate(Line(Point(1, 0), Point(3, 0)), 90, Point(0, 0))
+        assert rotated.is_strictly_equal(Line(Point(0, 1), Point(0, 3)))
 
     def test_rotate_circle(self, cs: CoordinateSystem) -> None:
-        pass
+        assert cs.rotate(Circle(Point(2, 0), 3), 90, Point(0, 0)) == Circle(
+            Point(0, 2), 3
+        )
 
     def test_rotate_rectangle(self, cs: CoordinateSystem) -> None:
-        pass
+        assert cs.rotate(
+            Rectangle(Point(1, 1), Point(3, 2)), 90, Point(0, 0)
+        ) == Rectangle(Point(-2, 1), Point(-1, 3))
+        assert cs.rotate(
+            Rectangle(Point(0, 13.84), Point(16.5, 54.16)),
+            180,
+            Point(52.5, 34),
+        ) == Rectangle(Point(88.5, 13.84), Point(105, 54.16))
 
 
 class TestLeftDownCoordSys:

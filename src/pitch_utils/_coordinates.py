@@ -285,20 +285,57 @@ class CoordinateSystem:
         raise NotImplementedError
 
     def _rotate_point(self, geom: Point, angle: float, origin: Point) -> Point:
-        raise NotImplementedError
+        translated_x = geom.x - origin.x
+        translated_y = geom.y - origin.y
+
+        # Convert to a standard right/up plane so positive angles stay
+        # counterclockwise in this coordinate system's orientation.
+        standard_x = translated_x * self._x_sign
+        standard_y = translated_y * self._y_sign
+        radians = np.deg2rad(angle)
+
+        cos_angle = np.cos(radians)
+        sin_angle = np.sin(radians)
+        rotated_x = (standard_x * cos_angle) - (standard_y * sin_angle)
+        rotated_y = (standard_x * sin_angle) + (standard_y * cos_angle)
+
+        x = origin.x + (rotated_x * self._x_sign)
+        y = origin.y + (rotated_y * self._y_sign)
+
+        if np.isclose(x, (rx := round(x, 2))):
+            x = rx
+        if np.isclose(y, (ry := round(y, 2))):
+            y = ry
+
+        return Point(x=float(x), y=float(y))
 
     def _rotate_line(self, geom: Line, angle: float, origin: Point) -> Line:
-        raise NotImplementedError
+        return Line(
+            start=self._rotate_point(geom.start, angle, origin),
+            end=self._rotate_point(geom.end, angle, origin),
+        )
 
     def _rotate_circle(
         self, geom: Circle, angle: float, origin: Point
     ) -> Circle:
-        raise NotImplementedError
+        return Circle(
+            center=self._rotate_point(geom.center, angle, origin),
+            radius=geom.radius,
+        )
 
     def _rotate_rectangle(
         self, geom: Rectangle, angle: float, origin: Point
     ) -> Rectangle:
-        raise NotImplementedError
+        rotated_coords = [
+            self._rotate_point(Point(x, y), angle, origin).coords
+            for x, y in geom.coords
+        ]
+        xs = [x for x, _ in rotated_coords]
+        ys = [y for _, y in rotated_coords]
+        return Rectangle(
+            p1=Point(min(xs), min(ys)),
+            p2=Point(max(xs), max(ys)),
+        )
 
     @overload
     def rotate(self, geom: Point, angle: float, origin: Point) -> Point: ...
