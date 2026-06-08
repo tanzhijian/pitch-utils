@@ -243,6 +243,14 @@ class CoordinateSystem:
     def y_dir(self) -> Literal["up", "down"]:
         return self._y_dir
 
+    @property
+    def _x_sign(self) -> Literal[-1, 1]:
+        return 1 if self._x_dir == "right" else -1
+
+    @property
+    def _y_sign(self) -> Literal[-1, 1]:
+        return 1 if self._y_dir == "up" else -1
+
     def shift_x(
         self,
         x: float,
@@ -250,8 +258,7 @@ class CoordinateSystem:
         op: Literal["+", "-"] = "+",
     ) -> float:
         op_sign = 1 if op == "+" else -1
-        dir_sign = 1 if self._x_dir == "right" else -1
-        return x + (sum(offsets) * dir_sign * op_sign)
+        return x + (sum(offsets) * self._x_sign * op_sign)
 
     def shift_y(
         self,
@@ -260,8 +267,7 @@ class CoordinateSystem:
         op: Literal["+", "-"] = "+",
     ) -> float:
         op_sign = 1 if op == "+" else -1
-        dir_sign = 1 if self._y_dir == "up" else -1
-        return y + (sum(offsets) * dir_sign * op_sign)
+        return y + (sum(offsets) * self._y_sign * op_sign)
 
     @overload
     def reflect(self, geom: Point, pivot: Line) -> Point: ...
@@ -278,5 +284,44 @@ class CoordinateSystem:
     def reflect(self, geom, pivot):
         raise NotImplementedError
 
-    def rotate(self, geom, angle: float, origin: "Point") -> "Point":
+    def _rotate_point(self, geom: Point, angle: float, origin: Point) -> Point:
         raise NotImplementedError
+
+    def _rotate_line(self, geom: Line, angle: float, origin: Point) -> Line:
+        raise NotImplementedError
+
+    def _rotate_circle(
+        self, geom: Circle, angle: float, origin: Point
+    ) -> Circle:
+        raise NotImplementedError
+
+    def _rotate_rectangle(
+        self, geom: Rectangle, angle: float, origin: Point
+    ) -> Rectangle:
+        raise NotImplementedError
+
+    @overload
+    def rotate(self, geom: Point, angle: float, origin: Point) -> Point: ...
+
+    @overload
+    def rotate(self, geom: Line, angle: float, origin: Point) -> Line: ...
+
+    @overload
+    def rotate(self, geom: Circle, angle: float, origin: Point) -> Circle: ...
+
+    @overload
+    def rotate(
+        self, geom: Rectangle, angle: float, origin: Point
+    ) -> Rectangle: ...
+
+    def rotate(self, geom, angle, origin):
+        if isinstance(geom, Point):
+            return self._rotate_point(geom, angle, origin)
+        elif isinstance(geom, Line):
+            return self._rotate_line(geom, angle, origin)
+        elif isinstance(geom, Circle):
+            return self._rotate_circle(geom, angle, origin)
+        elif isinstance(geom, Rectangle):
+            return self._rotate_rectangle(geom, angle, origin)
+        else:
+            raise TypeError("Unsupported geometry type")

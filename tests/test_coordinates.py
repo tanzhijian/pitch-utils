@@ -104,6 +104,18 @@ class TestDefaultCoordSys:
         assert cs.shift_y(1, 10) == 11
         assert cs.shift_y(1, 10, 1, op="-") == -10
 
+    def test_rotate_point(self, cs: CoordinateSystem) -> None:
+        pass
+
+    def test_rotate_line(self, cs: CoordinateSystem) -> None:
+        pass
+
+    def test_rotate_circle(self, cs: CoordinateSystem) -> None:
+        pass
+
+    def test_rotate_rectangle(self, cs: CoordinateSystem) -> None:
+        pass
+
 
 class TestLeftDownCoordSys:
     @pytest.fixture
