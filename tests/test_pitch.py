@@ -182,3 +182,70 @@ class TestVerticalPitch:
         halfway_line = pitch.halfway_line
         assert halfway_line.start == Point(0, 52.5)
         assert halfway_line.end == Point(68, 52.5)
+
+    def test_bottom_penalty_arc(self, pitch: VerticalPitch) -> None:
+        arc = pitch.bottom_penalty_arc
+        assert arc.center == Point(34, 11)
+        assert arc.radius == 9.15
+
+    def test_bottom_penalty_area(self, pitch: VerticalPitch) -> None:
+        area = pitch.bottom_penalty_area
+        assert area.coords == (
+            (13.84, 0),
+            (13.84, 16.5),
+            (54.16, 0),
+            (54.16, 16.5),
+        )
+
+    def test_bottom_goal_area(self, pitch: VerticalPitch) -> None:
+        area = pitch.bottom_goal_area
+        assert area.coords == (
+            (24.84, 0),
+            (24.84, 5.5),
+            (43.16, 0),
+            (43.16, 5.5),
+        )
+
+    def test_bottom_goal(self, pitch: VerticalPitch) -> None:
+        assert pitch.bottom_goal.coords == (
+            (30.34, -2.44),
+            (30.34, 0),
+            (37.66, -2.44),
+            (37.66, 0),
+        )
+
+    def test_top_penalty_arc(self, pitch: VerticalPitch) -> None:
+        arc = pitch.top_penalty_arc
+        assert arc.center == Point(34, 94)
+        assert arc.radius == 9.15
+
+    def test_top_penalty_area(self, pitch: VerticalPitch) -> None:
+        area = pitch.top_penalty_area
+        assert area.coords == (
+            (13.84, 88.5),
+            (13.84, 105),
+            (54.16, 88.5),
+            (54.16, 105),
+        )
+
+    def test_top_penalty_mark(self, pitch: VerticalPitch) -> None:
+        mark = pitch.top_penalty_mark
+        assert mark.center == Point(34, 94)
+        assert mark.radius == 0.1
+
+    def test_top_goal_area(self, pitch: VerticalPitch) -> None:
+        area = pitch.top_goal_area
+        assert area.coords == (
+            (24.84, 99.5),
+            (24.84, 105),
+            (43.16, 99.5),
+            (43.16, 105),
+        )
+
+    def test_top_goal(self, pitch: VerticalPitch) -> None:
+        assert pitch.top_goal.coords == (
+            (30.34, 105),
+            (30.34, 107.44),
+            (37.66, 105),
+            (37.66, 107.44),
+        )

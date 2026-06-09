@@ -117,19 +117,29 @@ class Pitch(ABC):
 
     @property
     @abstractmethod
-    def _penalty_arc_1(self) -> Circle:
+    def _penalty_mark_1_point(self) -> Point:
         """Left or bottom"""
         raise NotImplementedError
+
+    @property
+    def _penalty_arc_1(self) -> Circle:
+        """Left or bottom"""
+        return Circle(
+            center=self._penalty_mark_1_point,
+            radius=self._markings.centre_circle_radius,
+        )
+
+    @property
+    def _penalty_mark_1(self) -> Circle:
+        """Left or bottom"""
+        return Circle(
+            center=self._penalty_mark_1_point,
+            radius=self._markings.mark_radius,
+        )
 
     @property
     @abstractmethod
     def _penalty_area_1(self) -> Rectangle:
-        """Left or bottom"""
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def _penalty_mark_1(self) -> Circle:
         """Left or bottom"""
         raise NotImplementedError
 
@@ -208,31 +218,17 @@ class HorizontalPitch(Pitch):
         )
 
     @property
-    def _penalty_mark_point_1(self) -> Point:
+    def _penalty_mark_1_point(self) -> Point:
         return Point(
-            self._coord_sys.shift_x(
+            x=self._coord_sys.shift_x(
                 self.bottom_left.x, self._markings.penalty_mark_distance
             ),
-            self.left.center.y,
-        )
-
-    @property
-    def _penalty_arc_1(self) -> Circle:
-        return Circle(
-            center=self._penalty_mark_point_1,
-            radius=self._markings.centre_circle_radius,
+            y=self.left.center.y,
         )
 
     @property
     def left_penalty_arc(self) -> Circle:
         return self._penalty_arc_1
-
-    @property
-    def _penalty_mark_1(self) -> Circle:
-        return Circle(
-            center=self._penalty_mark_point_1,
-            radius=self._markings.mark_radius,
-        )
 
     @property
     def left_penalty_mark(self) -> Circle:
@@ -380,24 +376,121 @@ class VerticalPitch(Pitch):
         )
 
     @property
-    def _penalty_arc_1(self) -> Circle:
-        raise NotImplementedError
+    def _penalty_mark_1_point(self) -> Point:
+        return Point(
+            x=self.bottom.center.x,
+            y=self._coord_sys.shift_y(
+                self.bottom_left.y, self._markings.penalty_mark_distance
+            ),
+        )
+
+    @property
+    def bottom_penalty_arc(self) -> Circle:
+        return self._penalty_arc_1
+
+    @property
+    def bottom_penalty_mark(self) -> Circle:
+        return self._penalty_mark_1
 
     @property
     def _penalty_area_1(self) -> Rectangle:
-        raise NotImplementedError
+        return Rectangle(
+            p1=Point(
+                x=self._coord_sys.shift_x(
+                    self.bottom.center.x,
+                    self._markings.goal_width / 2,
+                    self._markings.penalty_area_length,
+                    op="-",
+                ),
+                y=self.bottom_left.y,
+            ),
+            p2=Point(
+                x=self._coord_sys.shift_x(
+                    self.bottom.center.x,
+                    self._markings.goal_width / 2,
+                    self._markings.penalty_area_length,
+                ),
+                y=self.bottom_left.y + self._markings.penalty_area_length,
+            ),
+        )
 
     @property
-    def _penalty_mark_1(self) -> Circle:
-        raise NotImplementedError
+    def bottom_penalty_area(self) -> Rectangle:
+        return self._penalty_area_1
 
     @property
     def _goal_area_1(self) -> Rectangle:
-        raise NotImplementedError
+        return Rectangle(
+            p1=Point(
+                x=self._coord_sys.shift_x(
+                    self.bottom.center.x,
+                    self._markings.goal_width / 2,
+                    self._markings.goal_area_length,
+                    op="-",
+                ),
+                y=self.bottom_left.y,
+            ),
+            p2=Point(
+                x=self._coord_sys.shift_x(
+                    self.bottom.center.x,
+                    self._markings.goal_width / 2,
+                    self._markings.goal_area_length,
+                ),
+                y=self.bottom_left.y + self._markings.goal_area_length,
+            ),
+        )
+
+    @property
+    def bottom_goal_area(self) -> Rectangle:
+        return self._goal_area_1
 
     @property
     def _goal_1(self) -> Rectangle:
-        raise NotImplementedError
+        return Rectangle(
+            p1=Point(
+                x=self._coord_sys.shift_x(
+                    self.bottom.center.x,
+                    self._markings.goal_width / 2,
+                    op="-",
+                ),
+                y=self._coord_sys.shift_y(
+                    self.bottom_left.y,
+                    self._markings.goal_height,
+                    op="-",
+                ),
+            ),
+            p2=Point(
+                x=self._coord_sys.shift_x(
+                    self.bottom.center.x,
+                    self._markings.goal_width / 2,
+                ),
+                y=self.bottom_left.y,
+            ),
+        )
+
+    @property
+    def bottom_goal(self) -> Rectangle:
+        return self._goal_1
+
+    @property
+    def top_penalty_arc(self) -> Circle:
+        return self._penalty_arc_2
+
+    @property
+    def top_penalty_area(self) -> Rectangle:
+        return self._penalty_area_2
+
+    @property
+    def top_penalty_mark(self) -> Circle:
+        return self._penalty_mark_2
+
+    @property
+    def top_goal_area(self) -> Rectangle:
+        return self._goal_area_2
+
+    @property
+    def top_goal(self) -> Rectangle:
+        return self._goal_2
 
     def to_horizontal(self) -> HorizontalPitch:
         raise NotImplementedError
