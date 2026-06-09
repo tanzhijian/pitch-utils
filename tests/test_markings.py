@@ -16,6 +16,9 @@ class TestMarkingDimensions:
         assert dims == MarkingDimensions()
         assert dims != MarkingDimensions(penalty_mark_distance=12)
         assert dims != 2
+        assert MarkingDimensions(mark_radius=0.1 + 0.2) == MarkingDimensions(
+            mark_radius=0.3
+        )
 
     def test_scale(self, dims: MarkingDimensions) -> None:
         scaled_dims_1 = dims.scaled(0.5)
@@ -38,6 +41,7 @@ class TestMarkings:
         assert markings_1 != markings_5
         assert markings_3 != markings_4
         assert markings_1 != 2
+        assert Markings(touch_line=0.1+0.2) == Markings(touch_line=0.3)
 
     def test_default_params(self) -> None:
         markings = Markings()

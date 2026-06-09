@@ -40,7 +40,7 @@ class Pitch(ABC):
         if type(value) is not type(self):
             return False
         return (
-            self.area.coords == value.area.coords
+            self.area == value.area
             and self.markings == value.markings
             and self.coord_sys == value.coord_sys
         )
@@ -215,7 +215,9 @@ class HorizontalPitch(Pitch):
             if self._goal_line_range[1] > self._goal_line_range[0]
             else "down"
         )
-        return CoordinateSystem(origin=(0, 0), x_dir=x_dir, y_dir=y_dir)
+        return CoordinateSystem(
+            origin=Point(x=0, y=0), x_dir=x_dir, y_dir=y_dir
+        )
 
     @property
     def halfway_line(self) -> Line:
@@ -363,7 +365,9 @@ class VerticalPitch(Pitch):
             if self._touch_line_range[1] > self._touch_line_range[0]
             else "down"
         )
-        return CoordinateSystem(origin=(0, 0), x_dir=x_dir, y_dir=y_dir)
+        return CoordinateSystem(
+            origin=Point(x=0, y=0), x_dir=x_dir, y_dir=y_dir
+        )
 
     @property
     def halfway_line(self) -> Line:

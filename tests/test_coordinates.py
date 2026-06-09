@@ -18,6 +18,7 @@ class TestPoint:
         assert point == Point(1, 1)
         assert point != Point(2, 2)
         assert point != (1, 1)
+        assert Point(x=0.1 + 0.2, y=1) == Point(x=0.3, y=1)
 
     def test_lt(self, point: Point) -> None:
         assert point < Point(2, 1)
@@ -90,14 +91,20 @@ class TestRectangle:
 class TestDefaultCoordSys:
     @pytest.fixture(scope="class")
     def cs(self) -> CoordinateSystem:
-        return CoordinateSystem(origin=(0, 0), x_dir="right", y_dir="up")
+        return CoordinateSystem(origin=Point(0, 0), x_dir="right", y_dir="up")
 
     def test_eq(self, cs: CoordinateSystem) -> None:
-        assert cs == CoordinateSystem(origin=(0, 0), x_dir="right", y_dir="up")
-        assert cs != CoordinateSystem(origin=(1, 0), x_dir="right", y_dir="up")
-        assert cs != CoordinateSystem(origin=(0, 0), x_dir="left", y_dir="up")
+        assert cs == CoordinateSystem(
+            origin=Point(0, 0), x_dir="right", y_dir="up"
+        )
         assert cs != CoordinateSystem(
-            origin=(0, 0), x_dir="right", y_dir="down"
+            origin=Point(1, 0), x_dir="right", y_dir="up"
+        )
+        assert cs != CoordinateSystem(
+            origin=Point(0, 0), x_dir="left", y_dir="up"
+        )
+        assert cs != CoordinateSystem(
+            origin=Point(0, 0), x_dir="right", y_dir="down"
         )
         assert cs != 2
 
@@ -159,7 +166,7 @@ class TestDefaultCoordSys:
 class TestLeftDownCoordSys:
     @pytest.fixture
     def cs(self) -> CoordinateSystem:
-        return CoordinateSystem(origin=(0, 0), x_dir="left", y_dir="down")
+        return CoordinateSystem(origin=Point(0, 0), x_dir="left", y_dir="down")
 
     def test_shift_x(self, cs: CoordinateSystem) -> None:
         assert cs.shift_x(1, 10) == -9

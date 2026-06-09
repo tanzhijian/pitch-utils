@@ -1,3 +1,4 @@
+import math
 from functools import total_ordering
 from typing import Iterator, Literal, overload
 
@@ -50,7 +51,7 @@ class Point:
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Point):
             return False
-        return self.coords == value.coords
+        return math.isclose(self.x, value.x) and math.isclose(self.y, value.y)
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Point):
@@ -75,14 +76,16 @@ class Point:
 
 class Line:
     def __init__(self, start: Point, end: Point) -> None:
+        if start == end:
+            raise ValueError("Start and end points cannot be the same")
         self._start = start
         self._end = end
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Line):
             return False
-        normal_match = self._start == value.start and self._end == value.end
-        reverse_match = self._start == value.end and self._end == value.start
+        normal_match = self.start == value.start and self.end == value.end
+        reverse_match = self.start == value.end and self.end == value.start
         return normal_match or reverse_match
 
     def __repr__(self) -> str:
@@ -115,18 +118,20 @@ class Line:
 
     @property
     def coords(self) -> tuple[tuple[float, float], tuple[float, float]]:
-        return (self.start.coords, self.end.coords)
+        return (self._start.coords, self._end.coords)
 
 
 class Circle:
     def __init__(self, center: Point, radius: float) -> None:
+        if radius <= 0:
+            raise ValueError("Radius must be positive")
         self._center = center
         self._radius = radius
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Circle):
             return False
-        return self._center == value._center and self._radius == value._radius
+        return self.center == value.center and self.radius == value.radius
 
     def __repr__(self) -> str:
         return f"Circle(center={self._center}, radius={self._radius})"
@@ -172,6 +177,11 @@ class Rectangle:
         )
 
     @property
+    def points(self) -> tuple[Point, Point, Point, Point]:
+        s1, s2, s3, s4 = sorted((self._p1, self._p2, self._p3, self._p4))
+        return (s1, s2, s3, s4)
+
+    @property
     def coords(
         self,
     ) -> tuple[
@@ -180,15 +190,8 @@ class Rectangle:
         tuple[float, float],
         tuple[float, float],
     ]:
-        s1, s2, s3, s4 = sorted(
-            (
-                self._p1.coords,
-                self._p2.coords,
-                self._p3.coords,
-                self._p4.coords,
-            )
-        )
-        return (s1, s2, s3, s4)
+        s1, s2, s3, s4 = self.points
+        return (s1.coords, s2.coords, s3.coords, s4.coords)
 
     @property
     def center(self) -> Point:
@@ -200,7 +203,7 @@ class Rectangle:
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Rectangle):
             return False
-        return self.coords == value.coords
+        return self.points == value.points
 
     def __repr__(self) -> str:
         return f"Rectangle(coords={self.coords})"
@@ -209,7 +212,7 @@ class Rectangle:
 class CoordinateSystem:
     def __init__(
         self,
-        origin: tuple[float, float],
+        origin: Point,
         x_dir: Literal["left", "right"],
         y_dir: Literal["up", "down"],
     ) -> None:
@@ -221,9 +224,9 @@ class CoordinateSystem:
         if not isinstance(value, CoordinateSystem):
             return False
         return (
-            self._origin == value._origin
-            and self._x_dir == value._x_dir
-            and self._y_dir == value._y_dir
+            self.origin == value.origin
+            and self.x_dir == value.x_dir
+            and self.y_dir == value.y_dir
         )
 
     def __repr__(self) -> str:
@@ -233,7 +236,7 @@ class CoordinateSystem:
         )
 
     @property
-    def origin(self) -> tuple[float, float]:
+    def origin(self) -> Point:
         return self._origin
 
     @property
@@ -271,18 +274,12 @@ class CoordinateSystem:
         return y + (sum(offsets) * self._y_sign * op_sign)
 
     def _normalize_value(self, value: float) -> float:
-        rounded = round(value, 2)
-        if np.isclose(value, rounded):
-            value = rounded
-        return float(value)
+        return round(value, 2)
 
     def _reflect_point(self, geom: Point, pivot: Line) -> Point:
         pivot_dx = pivot.end.x - pivot.start.x
         pivot_dy = pivot.end.y - pivot.start.y
         pivot_length_sq = (pivot_dx**2) + (pivot_dy**2)
-
-        if pivot_length_sq == 0:
-            raise ValueError("Pivot line cannot have zero length")
 
         start_to_point_x = geom.x - pivot.start.x
         start_to_point_y = geom.y - pivot.start.y

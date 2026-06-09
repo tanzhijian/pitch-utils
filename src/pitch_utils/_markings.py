@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass, fields
 from typing import Literal
 
@@ -26,6 +27,14 @@ class MarkingDimensions:
 
     def __truediv__(self, factor: float) -> "MarkingDimensions":
         return self.scaled(1 / factor)
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, MarkingDimensions):
+            return False
+        return all(
+            math.isclose(getattr(self, f.name), getattr(value, f.name))
+            for f in fields(self)
+        )
 
 
 class Markings:
@@ -80,10 +89,10 @@ class Markings:
         if not isinstance(value, Markings):
             return False
         return (
-            self._touch_line == value.touch_line
-            and self._goal_line == value.goal_line
-            and self._mode == value.mode
-            and self._dims == value.dims
+            math.isclose(self.touch_line, value.touch_line)
+            and math.isclose(self.goal_line, value.goal_line)
+            and self.mode == value.mode
+            and self.dims == value.dims
         )
 
     def __repr__(self) -> str:

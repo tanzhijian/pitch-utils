@@ -45,7 +45,7 @@ class TestHorizontalPitch:
             touch_line_range=(0, 105),
             goal_line_range=(0, 68),
             coord_sys=CoordinateSystem(
-                origin=(52.5, 34), x_dir="right", y_dir="up"
+                origin=Point(52.5, 34), x_dir="right", y_dir="up"
             ),
         )
         assert pitch != VerticalPitch(
@@ -57,7 +57,7 @@ class TestHorizontalPitch:
         coord_sys = pitch.coord_sys
         assert coord_sys.x_dir == "right"
         assert coord_sys.y_dir == "up"
-        assert coord_sys.origin == (0, 0)
+        assert coord_sys.origin == Point(0, 0)
 
     def test_markings(self, pitch: HorizontalPitch) -> None:
         assert pitch.markings.touch_line == 105
@@ -178,7 +178,7 @@ class TestVerticalPitch:
         coord_sys = pitch.coord_sys
         assert coord_sys.x_dir == "right"
         assert coord_sys.y_dir == "up"
-        assert coord_sys.origin == (0, 0)
+        assert coord_sys.origin == Point(0, 0)
 
     def test_corners(self, pitch: VerticalPitch) -> None:
         assert pitch.bottom_left == Point(0, 0)
