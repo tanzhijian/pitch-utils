@@ -81,6 +81,11 @@ class TestRectangle:
     def test_coords(self, rectangle: Rectangle) -> None:
         assert rectangle.coords == ((0, 0), (0, 60), (100, 0), (100, 60))
 
+    def test_center(self, rectangle: Rectangle) -> None:
+        center = rectangle.center
+        assert center.x == 50
+        assert center.y == 30
+
 
 class TestDefaultCoordSys:
     @pytest.fixture(scope="class")

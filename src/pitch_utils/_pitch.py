@@ -14,6 +14,7 @@ class Pitch(ABC):
     ) -> None:
         self._touch_line_range = touch_line_range
         self._goal_line_range = goal_line_range
+        self._area = self._build_area()
 
         touch_line = abs(touch_line_range[1] - touch_line_range[0])
         goal_line = abs(goal_line_range[1] - goal_line_range[0])
@@ -28,13 +29,25 @@ class Pitch(ABC):
         )
 
     @abstractmethod
+    def _build_area(self) -> Rectangle:
+        raise NotImplementedError
+
+    @abstractmethod
     def _build_coord_sys(self) -> CoordinateSystem:
         raise NotImplementedError
 
     def __eq__(self, value: object) -> bool:
         if type(value) is not type(self):
             return False
-        return self.coords == value.coords and self.markings == value.markings
+        return (
+            self.area.coords == value.area.coords
+            and self.markings == value.markings
+            and self.coord_sys == value.coord_sys
+        )
+
+    @property
+    def area(self) -> Rectangle:
+        return self._area
 
     @property
     def coord_sys(self) -> CoordinateSystem:
@@ -45,40 +58,44 @@ class Pitch(ABC):
         return self._markings
 
     @property
-    @abstractmethod
+    def _left_x(self) -> float:
+        min_x = self._area.min_point.x
+        max_x = self._area.max_point.x
+        return min_x if self._coord_sys.x_dir == "right" else max_x
+
+    @property
+    def _right_x(self) -> float:
+        min_x = self._area.min_point.x
+        max_x = self._area.max_point.x
+        return max_x if self._coord_sys.x_dir == "right" else min_x
+
+    @property
+    def _bottom_y(self) -> float:
+        min_y = self._area.min_point.y
+        max_y = self._area.max_point.y
+        return min_y if self._coord_sys.y_dir == "up" else max_y
+
+    @property
+    def _top_y(self) -> float:
+        min_y = self._area.min_point.y
+        max_y = self._area.max_point.y
+        return max_y if self._coord_sys.y_dir == "up" else min_y
+
+    @property
     def bottom_left(self) -> Point:
-        raise NotImplementedError
+        return Point(self._left_x, self._bottom_y)
 
     @property
-    @abstractmethod
     def bottom_right(self) -> Point:
-        raise NotImplementedError
+        return Point(self._right_x, self._bottom_y)
 
     @property
-    @abstractmethod
     def top_left(self) -> Point:
-        raise NotImplementedError
+        return Point(self._left_x, self._top_y)
 
     @property
-    @abstractmethod
     def top_right(self) -> Point:
-        raise NotImplementedError
-
-    @property
-    def coords(
-        self,
-    ) -> tuple[
-        tuple[float, float],
-        tuple[float, float],
-        tuple[float, float],
-        tuple[float, float],
-    ]:
-        return (
-            self.bottom_left.coords,
-            self.bottom_right.coords,
-            self.top_left.coords,
-            self.top_right.coords,
-        )
+        return Point(self._right_x, self._top_y)
 
     @property
     def left(self) -> Line:
@@ -99,21 +116,21 @@ class Pitch(ABC):
     @property
     def centre_circle(self) -> Circle:
         return Circle(
-            center=self.halfway_line.center,
+            center=self._area.center,
             radius=self._markings.centre_circle_radius,
+        )
+
+    @property
+    def centre_mark(self) -> Circle:
+        return Circle(
+            center=self._area.center,
+            radius=self._markings.mark_radius,
         )
 
     @property
     @abstractmethod
     def halfway_line(self) -> Line:
         raise NotImplementedError
-
-    @property
-    def centre_mark(self) -> Circle:
-        return Circle(
-            center=self.halfway_line.center,
-            radius=self._markings.mark_radius,
-        )
 
     @property
     @abstractmethod
@@ -181,6 +198,12 @@ class Pitch(ABC):
 
 
 class HorizontalPitch(Pitch):
+    def _build_area(self) -> Rectangle:
+        return Rectangle(
+            p1=Point(self._touch_line_range[0], self._goal_line_range[0]),
+            p2=Point(self._touch_line_range[1], self._goal_line_range[1]),
+        )
+
     def _build_coord_sys(self) -> CoordinateSystem:
         x_dir = (
             "right"
@@ -193,22 +216,6 @@ class HorizontalPitch(Pitch):
             else "down"
         )
         return CoordinateSystem(origin=(0, 0), x_dir=x_dir, y_dir=y_dir)
-
-    @property
-    def bottom_left(self) -> Point:
-        return Point(self._touch_line_range[0], self._goal_line_range[0])
-
-    @property
-    def bottom_right(self) -> Point:
-        return Point(self._touch_line_range[1], self._goal_line_range[0])
-
-    @property
-    def top_left(self) -> Point:
-        return Point(self._touch_line_range[0], self._goal_line_range[1])
-
-    @property
-    def top_right(self) -> Point:
-        return Point(self._touch_line_range[1], self._goal_line_range[1])
 
     @property
     def halfway_line(self) -> Line:
@@ -339,6 +346,12 @@ class HorizontalPitch(Pitch):
 
 
 class VerticalPitch(Pitch):
+    def _build_area(self) -> Rectangle:
+        return Rectangle(
+            p1=Point(self._goal_line_range[0], self._touch_line_range[0]),
+            p2=Point(self._goal_line_range[1], self._touch_line_range[1]),
+        )
+
     def _build_coord_sys(self) -> CoordinateSystem:
         x_dir = (
             "right"
@@ -351,22 +364,6 @@ class VerticalPitch(Pitch):
             else "down"
         )
         return CoordinateSystem(origin=(0, 0), x_dir=x_dir, y_dir=y_dir)
-
-    @property
-    def bottom_left(self) -> Point:
-        return Point(self._goal_line_range[0], self._touch_line_range[0])
-
-    @property
-    def bottom_right(self) -> Point:
-        return Point(self._goal_line_range[1], self._touch_line_range[0])
-
-    @property
-    def top_left(self) -> Point:
-        return Point(self._goal_line_range[0], self._touch_line_range[1])
-
-    @property
-    def top_right(self) -> Point:
-        return Point(self._goal_line_range[1], self._touch_line_range[1])
 
     @property
     def halfway_line(self) -> Line:
@@ -477,12 +474,12 @@ class VerticalPitch(Pitch):
         return self._penalty_arc_2
 
     @property
-    def top_penalty_area(self) -> Rectangle:
-        return self._penalty_area_2
-
-    @property
     def top_penalty_mark(self) -> Circle:
         return self._penalty_mark_2
+
+    @property
+    def top_penalty_area(self) -> Rectangle:
+        return self._penalty_area_2
 
     @property
     def top_goal_area(self) -> Rectangle:

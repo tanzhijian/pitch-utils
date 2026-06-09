@@ -1,6 +1,7 @@
 import pytest
 
 from pitch_utils import (
+    CoordinateSystem,
     HorizontalPitch,
     Line,
     MarkingDimensions,
@@ -38,6 +39,13 @@ class TestHorizontalPitch:
                 touch_line=105,
                 goal_line=68,
                 spec=MarkingDimensions(penalty_mark_distance=12),
+            ),
+        )
+        assert pitch != HorizontalPitch(
+            touch_line_range=(0, 105),
+            goal_line_range=(0, 68),
+            coord_sys=CoordinateSystem(
+                origin=(52.5, 34), x_dir="right", y_dir="up"
             ),
         )
         assert pitch != VerticalPitch(

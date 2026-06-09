@@ -190,6 +190,7 @@ class Rectangle:
         )
         return (s1, s2, s3, s4)
 
+    @property
     def center(self) -> Point:
         return Point(
             x=(self._p1.x + self._p2.x) / 2,
