@@ -48,10 +48,10 @@ class Point:
         self._x = x
         self._y = y
 
-    def __eq__(self, value: object) -> bool:
-        if not isinstance(value, Point):
-            return False
-        return math.isclose(self.x, value.x) and math.isclose(self.y, value.y)
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Point):
+            return NotImplemented
+        return math.isclose(self.x, other.x) and math.isclose(self.y, other.y)
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Point):
