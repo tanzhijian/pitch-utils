@@ -1,45 +1,52 @@
 import math
 from functools import total_ordering
-from typing import Iterator, Literal, overload
+from typing import Any, Iterator, Literal, Sequence, overload
 
 import numpy as np
 import numpy.typing as npt
 
-from ._types import LocationsTypes
-
 
 class Locations:
-    def __init__(
-        self,
-        data: LocationsTypes,
-    ) -> None:
-        self._arr = self._to_array(data)
+    def __init__(self, arr: npt.NDArray[np.float64]) -> None:
+        self._arr = arr
 
-    def _to_array(
-        self,
-        data: LocationsTypes,
-    ) -> npt.NDArray[np.float64]:
-        arr = np.asarray(data, dtype=np.float64)
-
-        if arr.ndim == 1:
-            if arr.shape[0] != 2:
-                raise ValueError
-            arr = arr[np.newaxis, :]
+    @classmethod
+    def from_array(
+        cls, data: Sequence[Sequence[int | float]] | npt.NDArray[np.number]
+    ) -> "Locations":
+        if isinstance(data, np.ndarray):
+            arr = np.asarray(data, dtype=np.float64).copy()
+        else:
+            arr = np.array(data, dtype=np.float64)
 
         if arr.ndim != 2 or arr.shape[1] != 2:
-            raise ValueError
+            raise ValueError(
+                f"Invalid shape {arr.shape}. Data must be a 2D "
+                "array-like structure with shape (N, 2)."
+            )
 
-        return arr
+        return cls(arr)
+
+    @classmethod
+    def from_columns(
+        cls,
+        data: dict[str, Any] | Any,
+        x_col: str,
+        y_col: str,
+    ) -> "Locations":
+        raise NotImplementedError
 
     def to_numpy(self) -> npt.NDArray[np.float64]:
-        return self._arr
+        view = self._arr.view()
+        view.flags.writeable = False
+        return view
 
     def to_list(self) -> list[list[float]]:
         return self._arr.tolist()
 
     def iter_tuples(self) -> Iterator[tuple[float, float]]:
         for row in self._arr:
-            yield tuple(row)
+            yield (row[0], row[1])
 
 
 @total_ordering
