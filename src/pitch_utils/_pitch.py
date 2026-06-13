@@ -167,6 +167,7 @@ class Pitch(ABC):
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def _goal_1(self) -> Rectangle:
         """Left or bottom"""
         raise NotImplementedError
