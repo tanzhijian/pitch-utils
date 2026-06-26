@@ -46,6 +46,14 @@ class Pitch(ABC):
         )
 
     @property
+    def touch_line_range(self) -> tuple[float, float]:
+        return self._touch_line_range
+
+    @property
+    def goal_line_range(self) -> tuple[float, float]:
+        return self._goal_line_range
+
+    @property
     def area(self) -> Rectangle:
         return self._area
 
@@ -197,6 +205,10 @@ class Pitch(ABC):
         """Right or top"""
         return self._coord_sys.reflect(self._goal_1, self.halfway_line)
 
+    @abstractmethod
+    def transpose(self) -> "Pitch":
+        raise NotImplementedError
+
 
 class HorizontalPitch(Pitch):
     def _build_area(self) -> Rectangle:
@@ -344,7 +356,7 @@ class HorizontalPitch(Pitch):
     def right_goal(self) -> Rectangle:
         return self._goal_2
 
-    def to_vertical(self) -> "VerticalPitch":
+    def transpose(self) -> "VerticalPitch":
         raise NotImplementedError
 
 
@@ -494,5 +506,5 @@ class VerticalPitch(Pitch):
     def top_goal(self) -> Rectangle:
         return self._goal_2
 
-    def to_horizontal(self) -> HorizontalPitch:
+    def transpose(self) -> HorizontalPitch:
         raise NotImplementedError
