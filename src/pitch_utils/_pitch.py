@@ -218,18 +218,11 @@ class HorizontalPitch(Pitch):
         )
 
     def _build_coord_sys(self) -> CoordinateSystem:
-        x_dir = (
-            "right"
-            if self._touch_line_range[1] > self._touch_line_range[0]
-            else "left"
-        )
-        y_dir = (
-            "up"
-            if self._goal_line_range[1] > self._goal_line_range[0]
-            else "down"
-        )
+
         return CoordinateSystem(
-            origin=Point(x=0, y=0), x_dir=x_dir, y_dir=y_dir
+            origin=Point(x=0, y=0),
+            x_range=self._touch_line_range,
+            y_range=self._goal_line_range,
         )
 
     @property
@@ -368,18 +361,10 @@ class VerticalPitch(Pitch):
         )
 
     def _build_coord_sys(self) -> CoordinateSystem:
-        x_dir = (
-            "right"
-            if self._goal_line_range[1] > self._goal_line_range[0]
-            else "left"
-        )
-        y_dir = (
-            "up"
-            if self._touch_line_range[1] > self._touch_line_range[0]
-            else "down"
-        )
         return CoordinateSystem(
-            origin=Point(x=0, y=0), x_dir=x_dir, y_dir=y_dir
+            origin=Point(x=0, y=0),
+            x_range=self._goal_line_range,
+            y_range=self._touch_line_range,
         )
 
     @property

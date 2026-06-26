@@ -45,7 +45,7 @@ class TestHorizontalPitch:
             touch_line_range=(0, 105),
             goal_line_range=(0, 68),
             coord_sys=CoordinateSystem(
-                origin=Point(52.5, 34), x_dir="right", y_dir="up"
+                origin=Point(52.5, 34), x_range=(105, 0), y_range=(68, 0)
             ),
         )
         assert pitch != VerticalPitch(

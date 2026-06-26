@@ -220,26 +220,29 @@ class CoordinateSystem:
     def __init__(
         self,
         origin: Point,
-        x_dir: Literal["left", "right"],
-        y_dir: Literal["up", "down"],
+        x_range: tuple[float, float],
+        y_range: tuple[float, float],
     ) -> None:
         self._origin = origin
-        self._x_dir = x_dir
-        self._y_dir = y_dir
+        self._x_range = x_range
+        self._y_range = y_range
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, CoordinateSystem):
             return False
         return (
             self.origin == value.origin
-            and self.x_dir == value.x_dir
-            and self.y_dir == value.y_dir
+            and math.isclose(self.x_range[0], value.x_range[0])
+            and math.isclose(self.x_range[1], value.x_range[1])
+            and math.isclose(self.y_range[0], value.y_range[0])
+            and math.isclose(self.y_range[1], value.y_range[1])
         )
 
     def __repr__(self) -> str:
         return (
             f"CoordinateSystem(origin={self._origin}, "
-            f"x_dir='{self._x_dir}', y_dir='{self._y_dir}')"
+            f"x_range={self._x_range}, y_range={self._y_range}, "
+            f"x_dir='{self.x_dir}', y_dir='{self.y_dir}')"
         )
 
     @property
@@ -247,20 +250,28 @@ class CoordinateSystem:
         return self._origin
 
     @property
+    def x_range(self) -> tuple[float, float]:
+        return self._x_range
+
+    @property
+    def y_range(self) -> tuple[float, float]:
+        return self._y_range
+
+    @property
     def x_dir(self) -> Literal["left", "right"]:
-        return self._x_dir
+        return "right" if self._x_range[1] > self._x_range[0] else "left"
 
     @property
     def y_dir(self) -> Literal["up", "down"]:
-        return self._y_dir
+        return "up" if self._y_range[1] > self._y_range[0] else "down"
 
     @property
     def _x_sign(self) -> Literal[-1, 1]:
-        return 1 if self._x_dir == "right" else -1
+        return 1 if self.x_dir == "right" else -1
 
     @property
     def _y_sign(self) -> Literal[-1, 1]:
-        return 1 if self._y_dir == "up" else -1
+        return 1 if self.y_dir == "up" else -1
 
     def shift_x(
         self,
