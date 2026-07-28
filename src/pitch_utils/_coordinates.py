@@ -8,7 +8,16 @@ import numpy.typing as npt
 
 class Locations:
     def __init__(self, arr: npt.NDArray[np.float64]) -> None:
+        self._validate_shape(arr)
         self._arr = arr
+
+    @staticmethod
+    def _validate_shape(arr: npt.NDArray[np.float64]) -> None:
+        if arr.ndim != 2 or arr.shape[1] != 2:
+            raise ValueError(
+                f"Invalid shape {arr.shape}. Data must be a 2D "
+                "array-like structure with shape (N, 2)."
+            )
 
     @classmethod
     def from_array(
@@ -18,12 +27,6 @@ class Locations:
             arr = np.asarray(data, dtype=np.float64).copy()
         else:
             arr = np.array(data, dtype=np.float64)
-
-        if arr.ndim != 2 or arr.shape[1] != 2:
-            raise ValueError(
-                f"Invalid shape {arr.shape}. Data must be a 2D "
-                "array-like structure with shape (N, 2)."
-            )
 
         return cls(arr)
 

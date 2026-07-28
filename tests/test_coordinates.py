@@ -1,12 +1,20 @@
+import numpy as np
 import pytest
 
 from pitch_utils import (
     Circle,
     CoordinateSystem,
     Line,
+    Locations,
     Point,
     Rectangle,
 )
+
+
+class TestLocations:
+    def test_init_rejects_invalid_shape(self) -> None:
+        with pytest.raises(ValueError, match=r"shape \(2,\)"):
+            Locations(np.array([1.0, 2.0]))
 
 
 class TestPoint:
