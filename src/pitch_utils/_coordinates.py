@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 from functools import total_ordering
 from typing import Any, Iterator, Literal, Sequence, overload
@@ -20,14 +22,20 @@ class Locations:
             )
 
     @classmethod
-    def from_array(
-        cls, data: Sequence[Sequence[int | float]] | npt.NDArray[np.number]
-    ) -> "Locations":
-        if isinstance(data, np.ndarray):
-            arr = np.asarray(data, dtype=np.float64).copy()
-        else:
-            arr = np.array(data, dtype=np.float64)
+    def from_points(cls, points: Sequence[Point]) -> Locations:
+        arr = np.array(
+            [(point.x, point.y) for point in points], dtype=np.float64
+        )
+        return cls(arr)
 
+    @classmethod
+    def from_rows(cls, rows: Sequence[Sequence[float]]) -> Locations:
+        arr = np.array(rows, dtype=np.float64)
+        return cls(arr)
+
+    @classmethod
+    def from_numpy(cls, array: npt.NDArray[np.number]) -> Locations:
+        arr = np.asarray(array, dtype=np.float64)
         return cls(arr)
 
     @classmethod
@@ -36,13 +44,14 @@ class Locations:
         data: dict[str, Any] | Any,
         x_col: str,
         y_col: str,
-    ) -> "Locations":
+    ) -> Locations:
         raise NotImplementedError
 
     def to_numpy(self) -> npt.NDArray[np.float64]:
-        view = self._arr.view()
-        view.flags.writeable = False
-        return view
+        return self._arr.copy()
+
+    def to_points(self) -> list[Point]:
+        return [Point(x, y) for x, y in self._arr]
 
     def to_list(self) -> list[list[float]]:
         return self._arr.tolist()

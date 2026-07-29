@@ -8,7 +8,6 @@ from ._coordinates import (
 )
 from ._markings import MarkingDimensions, Markings
 from ._pitch import HorizontalPitch, Pitch, VerticalPitch
-from ._transforms import scale
 
 __all__ = [
     "Circle",
@@ -22,5 +21,4 @@ __all__ = [
     "Point",
     "Rectangle",
     "VerticalPitch",
-    "scale",
 ]
