@@ -1,14 +1,21 @@
 from abc import ABC, abstractmethod
 
-from ._coordinates import Circle, CoordinateSystem, Line, Point, Rectangle
+from ._coordinates import (
+    Circle,
+    CoordinateSystem,
+    DirectedRange,
+    Line,
+    Point,
+    Rectangle,
+)
 from ._markings import Markings
 
 
 class Pitch(ABC):
     def __init__(
         self,
-        touch_line_range: tuple[float, float],
-        goal_line_range: tuple[float, float],
+        touch_line_range: DirectedRange,
+        goal_line_range: DirectedRange,
         markings: Markings | None = None,
         coord_sys: CoordinateSystem | None = None,
     ) -> None:
@@ -16,8 +23,8 @@ class Pitch(ABC):
         self._goal_line_range = goal_line_range
         self._area = self._build_area()
 
-        touch_line = abs(touch_line_range[1] - touch_line_range[0])
-        goal_line = abs(goal_line_range[1] - goal_line_range[0])
+        touch_line = touch_line_range.length
+        goal_line = goal_line_range.length
         self._markings = (
             markings
             if markings is not None
@@ -46,11 +53,11 @@ class Pitch(ABC):
         )
 
     @property
-    def touch_line_range(self) -> tuple[float, float]:
+    def touch_line_range(self) -> DirectedRange:
         return self._touch_line_range
 
     @property
-    def goal_line_range(self) -> tuple[float, float]:
+    def goal_line_range(self) -> DirectedRange:
         return self._goal_line_range
 
     @property
@@ -213,8 +220,10 @@ class Pitch(ABC):
 class HorizontalPitch(Pitch):
     def _build_area(self) -> Rectangle:
         return Rectangle(
-            p1=Point(self._touch_line_range[0], self._goal_line_range[0]),
-            p2=Point(self._touch_line_range[1], self._goal_line_range[1]),
+            p1=Point(
+                self._touch_line_range.start, self._goal_line_range.start
+            ),
+            p2=Point(self._touch_line_range.end, self._goal_line_range.end),
         )
 
     def _build_coord_sys(self) -> CoordinateSystem:
@@ -356,8 +365,10 @@ class HorizontalPitch(Pitch):
 class VerticalPitch(Pitch):
     def _build_area(self) -> Rectangle:
         return Rectangle(
-            p1=Point(self._goal_line_range[0], self._touch_line_range[0]),
-            p2=Point(self._goal_line_range[1], self._touch_line_range[1]),
+            p1=Point(
+                self._goal_line_range.start, self._touch_line_range.start
+            ),
+            p2=Point(self._goal_line_range.end, self._touch_line_range.end),
         )
 
     def _build_coord_sys(self) -> CoordinateSystem:

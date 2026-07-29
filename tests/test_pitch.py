@@ -2,6 +2,7 @@ import pytest
 
 from pitch_utils import (
     CoordinateSystem,
+    DirectedRange,
     HorizontalPitch,
     Line,
     MarkingDimensions,
@@ -15,26 +16,26 @@ class TestHorizontalPitch:
     @pytest.fixture(scope="class")
     def pitch(self) -> HorizontalPitch:
         return HorizontalPitch(
-            touch_line_range=(0, 105),
-            goal_line_range=(0, 68),
+            touch_line_range=DirectedRange(0, 105),
+            goal_line_range=DirectedRange(0, 68),
         )
 
     def test_eq(self, pitch: HorizontalPitch) -> None:
         assert pitch == HorizontalPitch(
-            touch_line_range=(0, 105),
-            goal_line_range=(0, 68),
+            touch_line_range=DirectedRange(0, 105),
+            goal_line_range=DirectedRange(0, 68),
         )
         assert pitch != HorizontalPitch(
-            touch_line_range=(0, 100),
-            goal_line_range=(0, 68),
+            touch_line_range=DirectedRange(0, 100),
+            goal_line_range=DirectedRange(0, 68),
         )
         assert pitch != HorizontalPitch(
-            touch_line_range=(0, 105),
-            goal_line_range=(0, 60),
+            touch_line_range=DirectedRange(0, 105),
+            goal_line_range=DirectedRange(0, 60),
         )
         assert pitch != HorizontalPitch(
-            touch_line_range=(0, 105),
-            goal_line_range=(0, 68),
+            touch_line_range=DirectedRange(0, 105),
+            goal_line_range=DirectedRange(0, 68),
             markings=Markings(
                 touch_line=105,
                 goal_line=68,
@@ -42,15 +43,17 @@ class TestHorizontalPitch:
             ),
         )
         assert pitch != HorizontalPitch(
-            touch_line_range=(0, 105),
-            goal_line_range=(0, 68),
+            touch_line_range=DirectedRange(0, 105),
+            goal_line_range=DirectedRange(0, 68),
             coord_sys=CoordinateSystem(
-                origin=Point(52.5, 34), x_range=(105, 0), y_range=(68, 0)
+                origin=Point(52.5, 34),
+                x_range=DirectedRange(105, 0),
+                y_range=DirectedRange(68, 0),
             ),
         )
         assert pitch != VerticalPitch(
-            touch_line_range=(0, 105),
-            goal_line_range=(0, 68),
+            touch_line_range=DirectedRange(0, 105),
+            goal_line_range=DirectedRange(0, 68),
         )
 
     def test_coord_sys(self, pitch: HorizontalPitch) -> None:
@@ -170,8 +173,8 @@ class TestVerticalPitch:
     @pytest.fixture(scope="class")
     def pitch(self) -> VerticalPitch:
         return VerticalPitch(
-            touch_line_range=(0, 105),
-            goal_line_range=(0, 68),
+            touch_line_range=DirectedRange(0, 105),
+            goal_line_range=DirectedRange(0, 68),
         )
 
     def test_coord_sys(self, pitch: VerticalPitch) -> None:

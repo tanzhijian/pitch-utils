@@ -1,6 +1,7 @@
 from ._coordinates import (
     Circle,
     CoordinateSystem,
+    DirectedRange,
     Line,
     Point,
     Points,
@@ -13,6 +14,7 @@ __all__ = [
     "Circle",
     "CoordinateSystem",
     "HorizontalPitch",
+    "DirectedRange",
     "Line",
     "MarkingDimensions",
     "Markings",

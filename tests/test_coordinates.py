@@ -4,6 +4,7 @@ import pytest
 from pitch_utils import (
     Circle,
     CoordinateSystem,
+    DirectedRange,
     Line,
     Point,
     Points,
@@ -133,25 +134,47 @@ class TestRectangle:
         assert center.y == 30
 
 
+class TestDirectedRange:
+    @pytest.fixture(scope="class")
+    def drange(self) -> DirectedRange:
+        return DirectedRange(0, 100)
+
+    def test_coords(self, drange: DirectedRange) -> None:
+        assert drange.coords == (0, 100)
+
+    def test_length(self, drange: DirectedRange) -> None:
+        assert drange.length == 100
+
+
 class TestDefaultCoordSys:
     @pytest.fixture(scope="class")
     def cs(self) -> CoordinateSystem:
         return CoordinateSystem(
-            origin=Point(0, 0), x_range=(0, 105), y_range=(0, 68)
+            origin=Point(0, 0),
+            x_range=DirectedRange(0, 105),
+            y_range=DirectedRange(0, 68),
         )
 
     def test_eq(self, cs: CoordinateSystem) -> None:
         assert cs == CoordinateSystem(
-            origin=Point(0, 0), x_range=(0, 105), y_range=(0, 68)
+            origin=Point(0, 0),
+            x_range=DirectedRange(0, 105),
+            y_range=DirectedRange(0, 68),
         )
         assert cs != CoordinateSystem(
-            origin=Point(1, 0), x_range=(0, 105), y_range=(0, 68)
+            origin=Point(1, 0),
+            x_range=DirectedRange(0, 105),
+            y_range=DirectedRange(0, 68),
         )
         assert cs != CoordinateSystem(
-            origin=Point(0, 0), x_range=(105, 0), y_range=(0, 68)
+            origin=Point(0, 0),
+            x_range=DirectedRange(105, 0),
+            y_range=DirectedRange(0, 68),
         )
         assert cs != CoordinateSystem(
-            origin=Point(0, 0), x_range=(0, 105), y_range=(68, 0)
+            origin=Point(0, 0),
+            x_range=DirectedRange(0, 105),
+            y_range=DirectedRange(68, 0),
         )
         assert cs != 2
 
@@ -214,7 +237,9 @@ class TestLeftDownCoordSys:
     @pytest.fixture
     def cs(self) -> CoordinateSystem:
         return CoordinateSystem(
-            origin=Point(0, 0), x_range=(105, 0), y_range=(68, 0)
+            origin=Point(0, 0),
+            x_range=DirectedRange(105, 0),
+            y_range=DirectedRange(68, 0),
         )
 
     def test_shift_x(self, cs: CoordinateSystem) -> None:

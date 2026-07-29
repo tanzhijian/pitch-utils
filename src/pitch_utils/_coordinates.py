@@ -228,12 +228,44 @@ class Rectangle:
         return f"Rectangle(coords={self.coords})"
 
 
+class DirectedRange:
+    def __init__(self, start: float, end: float) -> None:
+        self._start = start
+        self._end = end
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, DirectedRange):
+            return False
+        return math.isclose(self.start, value.start) and math.isclose(
+            self.end, value.end
+        )
+
+    def __repr__(self) -> str:
+        return f"DirectedRange(start={self._start}, end={self._end})"
+
+    @property
+    def start(self) -> float:
+        return self._start
+
+    @property
+    def end(self) -> float:
+        return self._end
+
+    @property
+    def coords(self) -> tuple[float, float]:
+        return (self._start, self._end)
+
+    @property
+    def length(self) -> float:
+        return abs(self._end - self._start)
+
+
 class CoordinateSystem:
     def __init__(
         self,
         origin: Point,
-        x_range: tuple[float, float],
-        y_range: tuple[float, float],
+        x_range: DirectedRange,
+        y_range: DirectedRange,
     ) -> None:
         self._origin = origin
         self._x_range = x_range
@@ -244,10 +276,8 @@ class CoordinateSystem:
             return False
         return (
             self.origin == value.origin
-            and math.isclose(self.x_range[0], value.x_range[0])
-            and math.isclose(self.x_range[1], value.x_range[1])
-            and math.isclose(self.y_range[0], value.y_range[0])
-            and math.isclose(self.y_range[1], value.y_range[1])
+            and self.x_range == value.x_range
+            and self.y_range == value.y_range
         )
 
     def __repr__(self) -> str:
@@ -262,20 +292,20 @@ class CoordinateSystem:
         return self._origin
 
     @property
-    def x_range(self) -> tuple[float, float]:
+    def x_range(self) -> DirectedRange:
         return self._x_range
 
     @property
-    def y_range(self) -> tuple[float, float]:
+    def y_range(self) -> DirectedRange:
         return self._y_range
 
     @property
     def x_dir(self) -> Literal["left", "right"]:
-        return "right" if self._x_range[1] > self._x_range[0] else "left"
+        return "right" if self._x_range.end > self._x_range.start else "left"
 
     @property
     def y_dir(self) -> Literal["up", "down"]:
-        return "up" if self._y_range[1] > self._y_range[0] else "down"
+        return "up" if self._y_range.end > self._y_range.start else "down"
 
     @property
     def _x_sign(self) -> Literal[-1, 1]:
