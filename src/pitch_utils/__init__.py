@@ -2,8 +2,8 @@ from ._coordinates import (
     Circle,
     CoordinateSystem,
     Line,
-    Locations,
     Point,
+    Points,
     Rectangle,
 )
 from ._markings import MarkingDimensions, Markings
@@ -14,11 +14,11 @@ __all__ = [
     "CoordinateSystem",
     "HorizontalPitch",
     "Line",
-    "Locations",
     "MarkingDimensions",
     "Markings",
     "Pitch",
     "Point",
+    "Points",
     "Rectangle",
     "VerticalPitch",
 ]

@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 
 
-class Locations:
+class Points:
     def __init__(self, arr: npt.NDArray[np.float64]) -> None:
         self._validate_shape(arr)
         self._arr = arr
@@ -22,19 +22,19 @@ class Locations:
             )
 
     @classmethod
-    def from_points(cls, points: Sequence[Point]) -> Locations:
+    def from_points(cls, points: Sequence[Point]) -> Points:
         arr = np.array(
             [(point.x, point.y) for point in points], dtype=np.float64
         )
         return cls(arr)
 
     @classmethod
-    def from_rows(cls, rows: Sequence[Sequence[float]]) -> Locations:
+    def from_rows(cls, rows: Sequence[Sequence[float]]) -> Points:
         arr = np.array(rows, dtype=np.float64)
         return cls(arr)
 
     @classmethod
-    def from_numpy(cls, array: npt.NDArray[np.number]) -> Locations:
+    def from_numpy(cls, array: npt.NDArray[np.number]) -> Points:
         arr = np.asarray(array, dtype=np.float64)
         return cls(arr)
 
@@ -44,7 +44,7 @@ class Locations:
         data: dict[str, Any] | Any,
         x_col: str,
         y_col: str,
-    ) -> Locations:
+    ) -> Points:
         raise NotImplementedError
 
     def to_numpy(self) -> npt.NDArray[np.float64]:
@@ -110,7 +110,7 @@ class Line:
     def __repr__(self) -> str:
         return f"Line(start={self._start}, end={self._end})"
 
-    def is_strictly_equal(self, other: "Line") -> bool:
+    def is_strictly_equal(self, other: Line) -> bool:
         return self.coords == other.coords
 
     @property

@@ -5,53 +5,53 @@ from pitch_utils import (
     Circle,
     CoordinateSystem,
     Line,
-    Locations,
     Point,
+    Points,
     Rectangle,
 )
 
 
-class TestLocations:
+class TestPoints:
     @pytest.fixture(scope="class")
-    def locs(self) -> Locations:
-        return Locations.from_numpy(
+    def points(self) -> Points:
+        return Points.from_numpy(
             np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
         )
 
     def test_init_rejects_invalid_shape(self) -> None:
         with pytest.raises(ValueError, match=r"shape \(2,\)"):
-            Locations(np.array([1.0, 2.0]))
+            Points(np.array([1.0, 2.0]))
 
-    def test_from_points(self, locs: Locations) -> None:
-        points = [Point(1, 2), Point(3, 4), Point(5, 6)]
-        locs_2 = Locations.from_points(points)
-        assert locs_2.to_list() == locs.to_list()
+    def test_from_points(self, points: Points) -> None:
+        point_list = [Point(1, 2), Point(3, 4), Point(5, 6)]
+        points_2 = Points.from_points(point_list)
+        assert points_2.to_list() == points.to_list()
 
-    def test_from_rows(self, locs: Locations) -> None:
+    def test_from_rows(self, points: Points) -> None:
         rows = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
-        locs_2 = Locations.from_rows(rows)
-        assert locs_2.to_list() == locs.to_list()
+        points_2 = Points.from_rows(rows)
+        assert points_2.to_list() == points.to_list()
 
-    def test_from_numpy(self, locs: Locations) -> None:
+    def test_from_numpy(self, points: Points) -> None:
         arr = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-        locs_2 = Locations.from_numpy(arr)
-        assert locs_2.to_list() == locs.to_list()
+        points_2 = Points.from_numpy(arr)
+        assert points_2.to_list() == points.to_list()
 
-    def test_to_list(self, locs: Locations) -> None:
+    def test_to_list(self, points: Points) -> None:
         expected = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
-        assert locs.to_list() == expected
+        assert points.to_list() == expected
 
-    def test_to_points(self, locs: Locations) -> None:
+    def test_to_points(self, points: Points) -> None:
         expected = [Point(1, 2), Point(3, 4), Point(5, 6)]
-        assert locs.to_points() == expected
+        assert points.to_points() == expected
 
-    def test_to_numpy(self, locs: Locations) -> None:
+    def test_to_numpy(self, points: Points) -> None:
         expected = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-        np.testing.assert_array_equal(locs.to_numpy(), expected)
+        np.testing.assert_array_equal(points.to_numpy(), expected)
 
-    def test_iter_tuples(self, locs: Locations) -> None:
+    def test_iter_tuples(self, points: Points) -> None:
         expected = [(1.0, 2.0), (3.0, 4.0), (5.0, 6.0)]
-        assert list(locs.iter_tuples()) == expected
+        assert list(points.iter_tuples()) == expected
 
 
 class TestPoint:
