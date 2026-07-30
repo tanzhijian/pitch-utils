@@ -271,3 +271,11 @@ class TestLeftDownCoordSys:
         assert cs.shift(
             Point(1, 2), x_offset=10, y_offset=3, x_op="-", y_op="-"
         ) == Point(11, 5)
+
+    def test_reflect_point(self, cs: CoordinateSystem) -> None:
+        pivot = Line(Point(0, -1), Point(0, 1))
+        assert cs.reflect(Point(1, 2), pivot) == Point(-1, 2)
+
+    def test_rotate_point(self, cs: CoordinateSystem) -> None:
+        assert cs.rotate(Point(1, 0), 90, Point(0, 0)) == Point(0, 1)
+        assert cs.rotate(Point(-1, 0), 180, Point(0, 0)) == Point(1, 0)
