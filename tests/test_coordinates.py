@@ -212,6 +212,13 @@ class TestDefaultCoordSys:
         with pytest.raises(ValueError, match=r"Operation must be '\+' or '-'"):
             cs.shift(Point(1, 2), x_op=invalid_op)
 
+    def test_shift_points(self, cs: CoordinateSystem) -> None:
+        points = Points.from_rows([[1, 2], [3, 4]])
+        assert cs.shift(points, x_offset=5, y_offset=1).to_list() == [
+            [6.0, 3.0],
+            [8.0, 5.0],
+        ]
+
     def test_reflect_point(self, cs: CoordinateSystem) -> None:
         pivot = Line(Point(0, -1), Point(0, 1))
         assert cs.reflect(Point(1, 2), pivot) == Point(-1, 2)
@@ -232,6 +239,14 @@ class TestDefaultCoordSys:
         assert cs.reflect(
             Rectangle(Point(1, 1), Point(3, 2)), pivot
         ) == Rectangle(Point(-3, 1), Point(-1, 2))
+
+    def test_reflect_points(self, cs: CoordinateSystem) -> None:
+        pivot = Line(Point(0, -1), Point(0, 1))
+        points = Points.from_rows([[1, 2], [3, 4]])
+        assert cs.reflect(points, pivot).to_list() == [
+            [-1.0, 2.0],
+            [-3.0, 4.0],
+        ]
 
     def test_rotate_point(self, cs: CoordinateSystem) -> None:
         assert cs.rotate(Point(1, 0), 90, Point(0, 0)) == Point(0, 1)
@@ -255,6 +270,13 @@ class TestDefaultCoordSys:
             180,
             Point(52.5, 34),
         ) == Rectangle(Point(88.5, 13.84), Point(105, 54.16))
+
+    def test_rotate_points(self, cs: CoordinateSystem) -> None:
+        points = Points.from_rows([[1, 0], [0, 1]])
+        assert cs.rotate(points, 90, Point(0, 0)).to_list() == [
+            [0.0, 1.0],
+            [-1.0, 0.0],
+        ]
 
 
 class TestLeftDownCoordSys:

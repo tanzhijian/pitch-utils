@@ -92,6 +92,13 @@ class Point:
     def coords(self) -> tuple[float, float]:
         return (self._x, self._y)
 
+    def to_points(self) -> Points:
+        return Points.from_points([self])
+
+    @classmethod
+    def from_points(cls, points: Points) -> Point:
+        return points.to_points()[0]
+
 
 class Line:
     def __init__(self, start: Point, end: Point) -> None:
@@ -139,6 +146,14 @@ class Line:
     def coords(self) -> tuple[tuple[float, float], tuple[float, float]]:
         return (self._start.coords, self._end.coords)
 
+    def to_points(self) -> Points:
+        return Points.from_points([self.start, self.end])
+
+    @classmethod
+    def from_points(cls, points: Points) -> Line:
+        transformed = points.to_points()
+        return cls(transformed[0], transformed[1])
+
 
 class Circle:
     def __init__(self, center: Point, radius: float) -> None:
@@ -162,6 +177,12 @@ class Circle:
     @property
     def radius(self) -> float:
         return self._radius
+
+    def to_points(self) -> Points:
+        return Points.from_points([self.center])
+
+    def with_points(self, points: Points) -> Circle:
+        return Circle(Point.from_points(points), self.radius)
 
 
 class Rectangle:
@@ -226,6 +247,21 @@ class Rectangle:
 
     def __repr__(self) -> str:
         return f"Rectangle(coords={self.coords})"
+
+    def to_points(self) -> Points:
+        return Points.from_rows(self.coords)
+
+    @classmethod
+    def from_points(cls, points: Points) -> Rectangle:
+        coordinates = points.to_numpy()
+        return cls(
+            Point(
+                float(coordinates[:, 0].min()), float(coordinates[:, 1].min())
+            ),
+            Point(
+                float(coordinates[:, 0].max()), float(coordinates[:, 1].max())
+            ),
+        )
 
 
 class DirectedRange:
@@ -323,61 +359,59 @@ class CoordinateSystem:
             return -1
         raise ValueError("Operation must be '+' or '-'")
 
-    def _shift_point(
+    def _shift_points(
         self,
-        geom: Point,
+        geom: Points,
         x_offset: float,
         y_offset: float,
         x_op: Literal["+", "-"],
         y_op: Literal["+", "-"],
-    ) -> Point:
-        return Point(
-            x=geom.x + (x_offset * self._x_sign * self._offset_sign(x_op)),
-            y=geom.y + (y_offset * self._y_sign * self._offset_sign(y_op)),
+    ) -> Points:
+        x_shift = x_offset * self._x_sign * self._offset_sign(x_op)
+        y_shift = y_offset * self._y_sign * self._offset_sign(y_op)
+        return Points.from_numpy(
+            geom.to_numpy() + np.array([x_shift, y_shift])
         )
 
-    def _shift_line(
-        self,
-        geom: Line,
-        x_offset: float,
-        y_offset: float,
-        x_op: Literal["+", "-"],
-        y_op: Literal["+", "-"],
-    ) -> Line:
-        return Line(
-            start=self._shift_point(
-                geom.start, x_offset, y_offset, x_op, y_op
-            ),
-            end=self._shift_point(geom.end, x_offset, y_offset, x_op, y_op),
+    def _reflect_points(self, geom: Points, pivot: Line) -> Points:
+        pivot_start = np.array(pivot.start.coords)
+        pivot_vector = np.array(
+            [pivot.end.x - pivot.start.x, pivot.end.y - pivot.start.y]
         )
+        coordinates = geom.to_numpy()
+        projection_scale = (
+            (coordinates - pivot_start) @ pivot_vector
+        ) / np.dot(pivot_vector, pivot_vector)
+        projection = pivot_start + (
+            projection_scale[:, np.newaxis] * pivot_vector
+        )
+        return Points.from_numpy(np.round((2 * projection) - coordinates, 2))
 
-    def _shift_circle(
-        self,
-        geom: Circle,
-        x_offset: float,
-        y_offset: float,
-        x_op: Literal["+", "-"],
-        y_op: Literal["+", "-"],
-    ) -> Circle:
-        return Circle(
-            center=self._shift_point(
-                geom.center, x_offset, y_offset, x_op, y_op
-            ),
-            radius=geom.radius,
+    def _rotate_points(
+        self, geom: Points, angle: float, origin: Point
+    ) -> Points:
+        origin_coords = np.array(origin.coords)
+        signs = np.array([self._x_sign, self._y_sign])
+        standard = (geom.to_numpy() - origin_coords) * signs
+        radians = np.deg2rad(angle)
+        rotation = np.array(
+            [
+                [np.cos(radians), -np.sin(radians)],
+                [np.sin(radians), np.cos(radians)],
+            ]
         )
+        rotated = (standard @ rotation.T * signs) + origin_coords
+        return Points.from_numpy(np.round(rotated, 2))
 
-    def _shift_rectangle(
+    @overload
+    def shift(
         self,
-        geom: Rectangle,
-        x_offset: float,
-        y_offset: float,
-        x_op: Literal["+", "-"],
-        y_op: Literal["+", "-"],
-    ) -> Rectangle:
-        return Rectangle(
-            p1=self._shift_point(geom._p1, x_offset, y_offset, x_op, y_op),
-            p2=self._shift_point(geom._p2, x_offset, y_offset, x_op, y_op),
-        )
+        geom: Points,
+        x_offset: float = 0,
+        y_offset: float = 0,
+        x_op: Literal["+", "-"] = "+",
+        y_op: Literal["+", "-"] = "+",
+    ) -> Points: ...
 
     @overload
     def shift(
@@ -385,7 +419,6 @@ class CoordinateSystem:
         geom: Point,
         x_offset: float = 0,
         y_offset: float = 0,
-        *,
         x_op: Literal["+", "-"] = "+",
         y_op: Literal["+", "-"] = "+",
     ) -> Point: ...
@@ -396,7 +429,6 @@ class CoordinateSystem:
         geom: Line,
         x_offset: float = 0,
         y_offset: float = 0,
-        *,
         x_op: Literal["+", "-"] = "+",
         y_op: Literal["+", "-"] = "+",
     ) -> Line: ...
@@ -407,7 +439,6 @@ class CoordinateSystem:
         geom: Circle,
         x_offset: float = 0,
         y_offset: float = 0,
-        *,
         x_op: Literal["+", "-"] = "+",
         y_op: Literal["+", "-"] = "+",
     ) -> Circle: ...
@@ -418,79 +449,26 @@ class CoordinateSystem:
         geom: Rectangle,
         x_offset: float = 0,
         y_offset: float = 0,
-        *,
         x_op: Literal["+", "-"] = "+",
         y_op: Literal["+", "-"] = "+",
     ) -> Rectangle: ...
 
-    def shift(
-        self,
-        geom: Point | Line | Circle | Rectangle,
-        x_offset: float = 0,
-        y_offset: float = 0,
-        *,
-        x_op: Literal["+", "-"] = "+",
-        y_op: Literal["+", "-"] = "+",
-    ) -> Point | Line | Circle | Rectangle:
-        if isinstance(geom, Point):
-            return self._shift_point(geom, x_offset, y_offset, x_op, y_op)
-        if isinstance(geom, Line):
-            return self._shift_line(geom, x_offset, y_offset, x_op, y_op)
+    def shift(self, geom, x_offset=0, y_offset=0, x_op="+", y_op="+"):
+        points = geom if isinstance(geom, Points) else geom.to_points()
+        transformed = self._shift_points(
+            points, x_offset, y_offset, x_op, y_op
+        )
+        if isinstance(geom, Points):
+            return transformed
         if isinstance(geom, Circle):
-            return self._shift_circle(geom, x_offset, y_offset, x_op, y_op)
-        if isinstance(geom, Rectangle):
-            return self._shift_rectangle(geom, x_offset, y_offset, x_op, y_op)
-        raise TypeError("Unsupported geometry type")
-
-    def _normalize_value(self, value: float) -> float:
-        return round(value, 2)
-
-    def _reflect_point(self, geom: Point, pivot: Line) -> Point:
-        pivot_dx = pivot.end.x - pivot.start.x
-        pivot_dy = pivot.end.y - pivot.start.y
-        pivot_length_sq = (pivot_dx**2) + (pivot_dy**2)
-
-        start_to_point_x = geom.x - pivot.start.x
-        start_to_point_y = geom.y - pivot.start.y
-        projection_scale = (
-            (start_to_point_x * pivot_dx) + (start_to_point_y * pivot_dy)
-        ) / pivot_length_sq
-        projection_x = pivot.start.x + (projection_scale * pivot_dx)
-        projection_y = pivot.start.y + (projection_scale * pivot_dy)
-
-        reflected_x = (2 * projection_x) - geom.x
-        reflected_y = (2 * projection_y) - geom.y
-        return Point(
-            x=self._normalize_value(reflected_x),
-            y=self._normalize_value(reflected_y),
-        )
-
-    def _reflect_line(self, geom: Line, pivot: Line) -> Line:
-        return Line(
-            start=self._reflect_point(geom.start, pivot),
-            end=self._reflect_point(geom.end, pivot),
-        )
-
-    def _reflect_circle(self, geom: Circle, pivot: Line) -> Circle:
-        return Circle(
-            center=self._reflect_point(geom.center, pivot),
-            radius=geom.radius,
-        )
-
-    def _reflect_rectangle(self, geom: Rectangle, pivot: Line) -> Rectangle:
-        reflected_coords = [
-            self._reflect_point(Point(x, y), pivot).coords
-            for x, y in geom.coords
-        ]
-        xs = [x for x, _ in reflected_coords]
-        ys = [y for _, y in reflected_coords]
-        return Rectangle(
-            p1=Point(min(xs), min(ys)),
-            p2=Point(max(xs), max(ys)),
-        )
+            return geom.with_points(transformed)
+        return type(geom).from_points(transformed)
 
     @overload
     def reflect(self, geom: Point, pivot: Line) -> Point: ...
+
+    @overload
+    def reflect(self, geom: Points, pivot: Line) -> Points: ...
 
     @overload
     def reflect(self, geom: Line, pivot: Line) -> Line: ...
@@ -502,70 +480,19 @@ class CoordinateSystem:
     def reflect(self, geom: Rectangle, pivot: Line) -> Rectangle: ...
 
     def reflect(self, geom, pivot):
-        if isinstance(geom, Point):
-            return self._reflect_point(geom, pivot)
-        elif isinstance(geom, Line):
-            return self._reflect_line(geom, pivot)
-        elif isinstance(geom, Circle):
-            return self._reflect_circle(geom, pivot)
-        elif isinstance(geom, Rectangle):
-            return self._reflect_rectangle(geom, pivot)
-        else:
-            raise TypeError("Unsupported geometry type")
-
-    def _rotate_point(self, geom: Point, angle: float, origin: Point) -> Point:
-        translated_x = geom.x - origin.x
-        translated_y = geom.y - origin.y
-
-        # Convert to a standard right/up plane so positive angles stay
-        # counterclockwise in this coordinate system's orientation.
-        standard_x = translated_x * self._x_sign
-        standard_y = translated_y * self._y_sign
-        radians = np.deg2rad(angle)
-
-        cos_angle = np.cos(radians)
-        sin_angle = np.sin(radians)
-        rotated_x = (standard_x * cos_angle) - (standard_y * sin_angle)
-        rotated_y = (standard_x * sin_angle) + (standard_y * cos_angle)
-
-        x = origin.x + (rotated_x * self._x_sign)
-        y = origin.y + (rotated_y * self._y_sign)
-
-        return Point(
-            x=self._normalize_value(x),
-            y=self._normalize_value(y),
-        )
-
-    def _rotate_line(self, geom: Line, angle: float, origin: Point) -> Line:
-        return Line(
-            start=self._rotate_point(geom.start, angle, origin),
-            end=self._rotate_point(geom.end, angle, origin),
-        )
-
-    def _rotate_circle(
-        self, geom: Circle, angle: float, origin: Point
-    ) -> Circle:
-        return Circle(
-            center=self._rotate_point(geom.center, angle, origin),
-            radius=geom.radius,
-        )
-
-    def _rotate_rectangle(
-        self, geom: Rectangle, angle: float, origin: Point
-    ) -> Rectangle:
-        rotated_coords = [
-            self._rotate_point(Point(x, y), angle, origin).coords
-            for x, y in geom.coords
-        ]
-        xs = [x for x, _ in rotated_coords]
-        ys = [y for _, y in rotated_coords]
-        return Rectangle(
-            p1=Point(min(xs), min(ys)),
-            p2=Point(max(xs), max(ys)),
-        )
+        points = geom if isinstance(geom, Points) else geom.to_points()
+        transformed = self._reflect_points(points, pivot)
+        if isinstance(geom, Points):
+            return transformed
+        if isinstance(geom, Circle):
+            return geom.with_points(transformed)
+        return type(geom).from_points(transformed)
 
     @overload
     def rotate(self, geom: Point, angle: float, origin: Point) -> Point: ...
+
+    @overload
+    def rotate(self, geom: Points, angle: float, origin: Point) -> Points: ...
 
     @overload
     def rotate(self, geom: Line, angle: float, origin: Point) -> Line: ...
@@ -579,13 +506,10 @@ class CoordinateSystem:
     ) -> Rectangle: ...
 
     def rotate(self, geom, angle, origin):
-        if isinstance(geom, Point):
-            return self._rotate_point(geom, angle, origin)
-        elif isinstance(geom, Line):
-            return self._rotate_line(geom, angle, origin)
-        elif isinstance(geom, Circle):
-            return self._rotate_circle(geom, angle, origin)
-        elif isinstance(geom, Rectangle):
-            return self._rotate_rectangle(geom, angle, origin)
-        else:
-            raise TypeError("Unsupported geometry type")
+        points = geom if isinstance(geom, Points) else geom.to_points()
+        transformed = self._rotate_points(points, angle, origin)
+        if isinstance(geom, Points):
+            return transformed
+        if isinstance(geom, Circle):
+            return geom.with_points(transformed)
+        return type(geom).from_points(transformed)
