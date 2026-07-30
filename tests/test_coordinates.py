@@ -1,3 +1,5 @@
+from typing import Literal, cast
+
 import numpy as np
 import pytest
 
@@ -178,15 +180,37 @@ class TestDefaultCoordSys:
         )
         assert cs != 2
 
-    def test_shift_x(self, cs: CoordinateSystem) -> None:
-        assert cs.shift_x(1) == 1
-        assert cs.shift_x(1, 10) == 11
-        assert cs.shift_x(1, 10, 1, op="-") == -10
+    def test_shift_point(self, cs: CoordinateSystem) -> None:
+        assert cs.shift(Point(1, 2), x_offset=10) == Point(11, 2)
+        assert cs.shift(
+            Point(1, 2), x_offset=10, y_offset=3, x_op="-"
+        ) == Point(-9, 5)
 
-    def test_shift_y(self, cs: CoordinateSystem) -> None:
-        assert cs.shift_y(1, op="-")
-        assert cs.shift_y(1, 10) == 11
-        assert cs.shift_y(1, 10, 1, op="-") == -10
+    def test_shift_line(self, cs: CoordinateSystem) -> None:
+        shifted = cs.shift(
+            Line(Point(1, 2), Point(3, 4)), y_offset=5, y_op="-"
+        )
+        assert shifted.is_strictly_equal(Line(Point(1, -3), Point(3, -1)))
+
+    def test_shift_circle(self, cs: CoordinateSystem) -> None:
+        assert cs.shift(Circle(Point(2, 3), 4), x_offset=5) == Circle(
+            Point(7, 3), 4
+        )
+
+    def test_shift_rectangle(self, cs: CoordinateSystem) -> None:
+        assert cs.shift(
+            Rectangle(Point(1, 2), Point(3, 4)),
+            x_offset=5,
+            y_offset=6,
+            y_op="-",
+        ) == Rectangle(Point(6, -4), Point(8, -2))
+
+    def test_shift_rejects_invalid_operation(
+        self, cs: CoordinateSystem
+    ) -> None:
+        invalid_op = cast(Literal["+", "-"], "invalid")
+        with pytest.raises(ValueError, match=r"Operation must be '\+' or '-'"):
+            cs.shift(Point(1, 2), x_op=invalid_op)
 
     def test_reflect_point(self, cs: CoordinateSystem) -> None:
         pivot = Line(Point(0, -1), Point(0, 1))
@@ -242,10 +266,8 @@ class TestLeftDownCoordSys:
             y_range=DirectedRange(68, 0),
         )
 
-    def test_shift_x(self, cs: CoordinateSystem) -> None:
-        assert cs.shift_x(1, 10) == -9
-        assert cs.shift_x(1, 10, 1, op="-") == 12
-
-    def test_shift_y(self, cs: CoordinateSystem) -> None:
-        assert cs.shift_y(1, 10) == -9
-        assert cs.shift_y(1, 10, 1, op="-") == 12
+    def test_shift_point(self, cs: CoordinateSystem) -> None:
+        assert cs.shift(Point(1, 2), x_offset=10, y_offset=3) == Point(-9, -1)
+        assert cs.shift(
+            Point(1, 2), x_offset=10, y_offset=3, x_op="-", y_op="-"
+        ) == Point(11, 5)

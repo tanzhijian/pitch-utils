@@ -315,23 +315,132 @@ class CoordinateSystem:
     def _y_sign(self) -> Literal[-1, 1]:
         return 1 if self.y_dir == "up" else -1
 
-    def shift_x(
-        self,
-        x: float,
-        *offsets: float,
-        op: Literal["+", "-"] = "+",
-    ) -> float:
-        op_sign = 1 if op == "+" else -1
-        return x + (sum(offsets) * self._x_sign * op_sign)
+    @staticmethod
+    def _offset_sign(op: Literal["+", "-"]) -> Literal[-1, 1]:
+        if op == "+":
+            return 1
+        if op == "-":
+            return -1
+        raise ValueError("Operation must be '+' or '-'")
 
-    def shift_y(
+    def _shift_point(
         self,
-        y: float,
-        *offsets: float,
-        op: Literal["+", "-"] = "+",
-    ) -> float:
-        op_sign = 1 if op == "+" else -1
-        return y + (sum(offsets) * self._y_sign * op_sign)
+        geom: Point,
+        x_offset: float,
+        y_offset: float,
+        x_op: Literal["+", "-"],
+        y_op: Literal["+", "-"],
+    ) -> Point:
+        return Point(
+            x=geom.x + (x_offset * self._x_sign * self._offset_sign(x_op)),
+            y=geom.y + (y_offset * self._y_sign * self._offset_sign(y_op)),
+        )
+
+    def _shift_line(
+        self,
+        geom: Line,
+        x_offset: float,
+        y_offset: float,
+        x_op: Literal["+", "-"],
+        y_op: Literal["+", "-"],
+    ) -> Line:
+        return Line(
+            start=self._shift_point(
+                geom.start, x_offset, y_offset, x_op, y_op
+            ),
+            end=self._shift_point(geom.end, x_offset, y_offset, x_op, y_op),
+        )
+
+    def _shift_circle(
+        self,
+        geom: Circle,
+        x_offset: float,
+        y_offset: float,
+        x_op: Literal["+", "-"],
+        y_op: Literal["+", "-"],
+    ) -> Circle:
+        return Circle(
+            center=self._shift_point(
+                geom.center, x_offset, y_offset, x_op, y_op
+            ),
+            radius=geom.radius,
+        )
+
+    def _shift_rectangle(
+        self,
+        geom: Rectangle,
+        x_offset: float,
+        y_offset: float,
+        x_op: Literal["+", "-"],
+        y_op: Literal["+", "-"],
+    ) -> Rectangle:
+        return Rectangle(
+            p1=self._shift_point(geom._p1, x_offset, y_offset, x_op, y_op),
+            p2=self._shift_point(geom._p2, x_offset, y_offset, x_op, y_op),
+        )
+
+    @overload
+    def shift(
+        self,
+        geom: Point,
+        x_offset: float = 0,
+        y_offset: float = 0,
+        *,
+        x_op: Literal["+", "-"] = "+",
+        y_op: Literal["+", "-"] = "+",
+    ) -> Point: ...
+
+    @overload
+    def shift(
+        self,
+        geom: Line,
+        x_offset: float = 0,
+        y_offset: float = 0,
+        *,
+        x_op: Literal["+", "-"] = "+",
+        y_op: Literal["+", "-"] = "+",
+    ) -> Line: ...
+
+    @overload
+    def shift(
+        self,
+        geom: Circle,
+        x_offset: float = 0,
+        y_offset: float = 0,
+        *,
+        x_op: Literal["+", "-"] = "+",
+        y_op: Literal["+", "-"] = "+",
+    ) -> Circle: ...
+
+    @overload
+    def shift(
+        self,
+        geom: Rectangle,
+        x_offset: float = 0,
+        y_offset: float = 0,
+        *,
+        x_op: Literal["+", "-"] = "+",
+        y_op: Literal["+", "-"] = "+",
+    ) -> Rectangle: ...
+
+    def shift(
+        self,
+        geom: Point | Line | Circle | Rectangle,
+        x_offset: float = 0,
+        y_offset: float = 0,
+        *,
+        x_op: Literal["+", "-"] = "+",
+        y_op: Literal["+", "-"] = "+",
+    ) -> Point | Line | Circle | Rectangle:
+        if isinstance(geom, Point):
+            return self._shift_point(geom, x_offset, y_offset, x_op, y_op)
+        if isinstance(geom, Line):
+            return self._shift_line(geom, x_offset, y_offset, x_op, y_op)
+        if isinstance(geom, Circle):
+            return self._shift_circle(geom, x_offset, y_offset, x_op, y_op)
+        if isinstance(geom, Rectangle):
+            return self._shift_rectangle(geom, x_offset, y_offset, x_op, y_op)
+        raise TypeError("Unsupported geometry type")
 
     def _normalize_value(self, value: float) -> float:
         return round(value, 2)

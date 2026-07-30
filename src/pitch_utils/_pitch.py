@@ -243,11 +243,9 @@ class HorizontalPitch(Pitch):
 
     @property
     def _penalty_mark_1_point(self) -> Point:
-        return Point(
-            x=self._coord_sys.shift_x(
-                self.bottom_left.x, self._markings.penalty_mark_distance
-            ),
-            y=self.left.center.y,
+        return self._coord_sys.shift(
+            self.left.center,
+            x_offset=self._markings.penalty_mark_distance,
         )
 
     @property
@@ -261,21 +259,20 @@ class HorizontalPitch(Pitch):
     @property
     def _penalty_area_1(self) -> Rectangle:
         return Rectangle(
-            p1=Point(
-                x=self.bottom_left.x,
-                y=self._coord_sys.shift_y(
-                    self.left.center.y,
-                    self._markings.goal_width / 2,
-                    self._markings.penalty_area_length,
-                    op="-",
+            p1=self._coord_sys.shift(
+                self.left.center,
+                y_offset=(
+                    self._markings.goal_width / 2
+                    + self._markings.penalty_area_length
                 ),
+                y_op="-",
             ),
-            p2=Point(
-                self.bottom_left.x + self._markings.penalty_area_length,
-                y=self._coord_sys.shift_y(
-                    self.left.center.y,
-                    self._markings.goal_width / 2,
-                    self._markings.penalty_area_length,
+            p2=self._coord_sys.shift(
+                self.left.center,
+                x_offset=self._markings.penalty_area_length,
+                y_offset=(
+                    self._markings.goal_width / 2
+                    + self._markings.penalty_area_length
                 ),
             ),
         )
@@ -287,21 +284,20 @@ class HorizontalPitch(Pitch):
     @property
     def _goal_area_1(self) -> Rectangle:
         return Rectangle(
-            p1=Point(
-                x=self.bottom_left.x,
-                y=self._coord_sys.shift_y(
-                    self.left.center.y,
-                    self._markings.goal_width / 2,
-                    self._markings.goal_area_length,
-                    op="-",
+            p1=self._coord_sys.shift(
+                self.left.center,
+                y_offset=(
+                    self._markings.goal_width / 2
+                    + self._markings.goal_area_length
                 ),
+                y_op="-",
             ),
-            p2=Point(
-                x=self.bottom_left.x + self._markings.goal_area_length,
-                y=self._coord_sys.shift_y(
-                    self.left.center.y,
-                    self._markings.goal_width / 2,
-                    self._markings.goal_area_length,
+            p2=self._coord_sys.shift(
+                self.left.center,
+                x_offset=self._markings.goal_area_length,
+                y_offset=(
+                    self._markings.goal_width / 2
+                    + self._markings.goal_area_length
                 ),
             ),
         )
@@ -313,24 +309,16 @@ class HorizontalPitch(Pitch):
     @property
     def _goal_1(self) -> Rectangle:
         return Rectangle(
-            p1=Point(
-                x=self._coord_sys.shift_x(
-                    self.bottom_left.x,
-                    self._markings.goal_height,
-                    op="-",
-                ),
-                y=self._coord_sys.shift_y(
-                    self.left.center.y,
-                    self._markings.goal_width / 2,
-                    op="-",
-                ),
+            p1=self._coord_sys.shift(
+                self.left.center,
+                x_offset=self._markings.goal_height,
+                y_offset=self._markings.goal_width / 2,
+                x_op="-",
+                y_op="-",
             ),
-            p2=Point(
-                x=self.bottom_left.x,
-                y=self._coord_sys.shift_y(
-                    self.left.center.y,
-                    self._markings.goal_width / 2,
-                ),
+            p2=self._coord_sys.shift(
+                self.left.center,
+                y_offset=self._markings.goal_width / 2,
             ),
         )
 
@@ -387,11 +375,9 @@ class VerticalPitch(Pitch):
 
     @property
     def _penalty_mark_1_point(self) -> Point:
-        return Point(
-            x=self.bottom.center.x,
-            y=self._coord_sys.shift_y(
-                self.bottom_left.y, self._markings.penalty_mark_distance
-            ),
+        return self._coord_sys.shift(
+            self.bottom.center,
+            y_offset=self._markings.penalty_mark_distance,
         )
 
     @property
@@ -405,22 +391,21 @@ class VerticalPitch(Pitch):
     @property
     def _penalty_area_1(self) -> Rectangle:
         return Rectangle(
-            p1=Point(
-                x=self._coord_sys.shift_x(
-                    self.bottom.center.x,
-                    self._markings.goal_width / 2,
-                    self._markings.penalty_area_length,
-                    op="-",
+            p1=self._coord_sys.shift(
+                self.bottom.center,
+                x_offset=(
+                    self._markings.goal_width / 2
+                    + self._markings.penalty_area_length
                 ),
-                y=self.bottom_left.y,
+                x_op="-",
             ),
-            p2=Point(
-                x=self._coord_sys.shift_x(
-                    self.bottom.center.x,
-                    self._markings.goal_width / 2,
-                    self._markings.penalty_area_length,
+            p2=self._coord_sys.shift(
+                self.bottom.center,
+                x_offset=(
+                    self._markings.goal_width / 2
+                    + self._markings.penalty_area_length
                 ),
-                y=self.bottom_left.y + self._markings.penalty_area_length,
+                y_offset=self._markings.penalty_area_length,
             ),
         )
 
@@ -431,22 +416,21 @@ class VerticalPitch(Pitch):
     @property
     def _goal_area_1(self) -> Rectangle:
         return Rectangle(
-            p1=Point(
-                x=self._coord_sys.shift_x(
-                    self.bottom.center.x,
-                    self._markings.goal_width / 2,
-                    self._markings.goal_area_length,
-                    op="-",
+            p1=self._coord_sys.shift(
+                self.bottom.center,
+                x_offset=(
+                    self._markings.goal_width / 2
+                    + self._markings.goal_area_length
                 ),
-                y=self.bottom_left.y,
+                x_op="-",
             ),
-            p2=Point(
-                x=self._coord_sys.shift_x(
-                    self.bottom.center.x,
-                    self._markings.goal_width / 2,
-                    self._markings.goal_area_length,
+            p2=self._coord_sys.shift(
+                self.bottom.center,
+                x_offset=(
+                    self._markings.goal_width / 2
+                    + self._markings.goal_area_length
                 ),
-                y=self.bottom_left.y + self._markings.goal_area_length,
+                y_offset=self._markings.goal_area_length,
             ),
         )
 
@@ -457,24 +441,16 @@ class VerticalPitch(Pitch):
     @property
     def _goal_1(self) -> Rectangle:
         return Rectangle(
-            p1=Point(
-                x=self._coord_sys.shift_x(
-                    self.bottom.center.x,
-                    self._markings.goal_width / 2,
-                    op="-",
-                ),
-                y=self._coord_sys.shift_y(
-                    self.bottom_left.y,
-                    self._markings.goal_height,
-                    op="-",
-                ),
+            p1=self._coord_sys.shift(
+                self.bottom.center,
+                x_offset=self._markings.goal_width / 2,
+                y_offset=self._markings.goal_height,
+                x_op="-",
+                y_op="-",
             ),
-            p2=Point(
-                x=self._coord_sys.shift_x(
-                    self.bottom.center.x,
-                    self._markings.goal_width / 2,
-                ),
-                y=self.bottom_left.y,
+            p2=self._coord_sys.shift(
+                self.bottom.center,
+                x_offset=self._markings.goal_width / 2,
             ),
         )
 
