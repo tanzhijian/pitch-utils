@@ -8,6 +8,16 @@ import numpy as np
 import numpy.typing as npt
 
 
+def _scale(
+    values: npt.NDArray[np.float64],
+    factors: npt.NDArray[np.float64],
+    origin: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
+    if np.any(factors <= 0):
+        raise ValueError("Scale factors must be positive")
+    return origin + (values - origin) * factors
+
+
 class Points:
     def __init__(self, arr: npt.NDArray[np.float64]) -> None:
         self._validate_shape(arr)
@@ -60,6 +70,17 @@ class Points:
         for row in self._arr:
             yield (row[0], row[1])
 
+    def scaled(
+        self, x_factor: float, y_factor: float, origin: Point
+    ) -> Points:
+        return Points.from_numpy(
+            _scale(
+                self.to_numpy(),
+                np.array([x_factor, y_factor], dtype=np.float64),
+                np.array(origin.coords, dtype=np.float64),
+            )
+        )
+
 
 @total_ordering
 class Point:
@@ -94,6 +115,14 @@ class Point:
 
     def to_points(self) -> Points:
         return Points.from_points([self])
+
+    def scaled(self, x_factor: float, y_factor: float, origin: Point) -> Point:
+        coordinates = _scale(
+            np.array([self.coords], dtype=np.float64),
+            np.array([x_factor, y_factor], dtype=np.float64),
+            np.array(origin.coords, dtype=np.float64),
+        )
+        return Point(*coordinates[0])
 
     @classmethod
     def from_points(cls, points: Points) -> Point:
@@ -149,6 +178,17 @@ class Line:
     def to_points(self) -> Points:
         return Points.from_points([self.start, self.end])
 
+    def scaled(self, x_factor: float, y_factor: float, origin: Point) -> Line:
+        return Line.from_points(
+            Points.from_numpy(
+                _scale(
+                    self.to_points().to_numpy(),
+                    np.array([x_factor, y_factor], dtype=np.float64),
+                    np.array(origin.coords, dtype=np.float64),
+                )
+            )
+        )
+
     @classmethod
     def from_points(cls, points: Points) -> Line:
         transformed = points.to_points()
@@ -183,6 +223,19 @@ class Circle:
 
     def with_points(self, points: Points) -> Circle:
         return Circle(Point.from_points(points), self.radius)
+
+    def scaled(self, factor: float, origin: Point) -> Circle:
+        center = _scale(
+            self.to_points().to_numpy(),
+            np.array([factor, factor], dtype=np.float64),
+            np.array(origin.coords, dtype=np.float64),
+        )
+        radius = _scale(
+            np.array([self.radius], dtype=np.float64),
+            np.array([factor], dtype=np.float64),
+            np.array([0.0], dtype=np.float64),
+        )
+        return Circle(Point(*center[0]), float(radius[0]))
 
 
 class Rectangle:
@@ -251,6 +304,19 @@ class Rectangle:
     def to_points(self) -> Points:
         return Points.from_rows(self.coords)
 
+    def scaled(
+        self, x_factor: float, y_factor: float, origin: Point
+    ) -> Rectangle:
+        return Rectangle.from_points(
+            Points.from_numpy(
+                _scale(
+                    self.to_points().to_numpy(),
+                    np.array([x_factor, y_factor], dtype=np.float64),
+                    np.array(origin.coords, dtype=np.float64),
+                )
+            )
+        )
+
     @classmethod
     def from_points(cls, points: Points) -> Rectangle:
         coordinates = points.to_numpy()
@@ -294,6 +360,14 @@ class DirectedRange:
     @property
     def length(self) -> float:
         return abs(self._end - self._start)
+
+    def scaled(self, factor: float, origin: float) -> DirectedRange:
+        values = _scale(
+            np.array([[self.start], [self.end]], dtype=np.float64),
+            np.array([factor], dtype=np.float64),
+            np.array([origin], dtype=np.float64),
+        )
+        return DirectedRange(float(values[0, 0]), float(values[1, 0]))
 
 
 class CoordinateSystem:
@@ -402,6 +476,15 @@ class CoordinateSystem:
         )
         rotated = (standard @ rotation.T * signs) + origin_coords
         return Points.from_numpy(np.round(rotated, 2))
+
+    def scaled(
+        self, x_factor: float, y_factor: float, origin: Point
+    ) -> CoordinateSystem:
+        return CoordinateSystem(
+            origin=self.origin.scaled(x_factor, y_factor, origin),
+            x_range=self.x_range.scaled(x_factor, origin.x),
+            y_range=self.y_range.scaled(y_factor, origin.y),
+        )
 
     @overload
     def shift(

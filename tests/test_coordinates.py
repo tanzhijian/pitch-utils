@@ -56,6 +56,13 @@ class TestPoints:
         expected = [(1.0, 2.0), (3.0, 4.0), (5.0, 6.0)]
         assert list(points.iter_tuples()) == expected
 
+    def test_scaled(self, points: Points) -> None:
+        assert points.scaled(2, 3, Point(1, 1)).to_list() == [
+            [1.0, 4.0],
+            [5.0, 10.0],
+            [9.0, 16.0],
+        ]
+
 
 class TestPoint:
     @pytest.fixture(scope="class")
@@ -76,6 +83,9 @@ class TestPoint:
 
     def test_coords(self, point: Point) -> None:
         assert point.coords == (1, 1)
+
+    def test_scaled(self, point: Point) -> None:
+        assert point.scaled(2, 3, Point(1, 1)) == Point(1, 1)
 
 
 class TestLine:
@@ -104,6 +114,11 @@ class TestLine:
     def test_coords(self, line: Line) -> None:
         assert line.coords == ((0, 0), (100, 0))
 
+    def test_scaled(self, line: Line) -> None:
+        assert line.scaled(2, 3, Point(1, 1)).is_strictly_equal(
+            Line(Point(-1, -2), Point(199, -2))
+        )
+
 
 class TestCircle:
     @pytest.fixture(scope="class")
@@ -115,6 +130,9 @@ class TestCircle:
         assert circle != Circle(Point(1, 1), 10)
         assert circle != Circle(Point(0, 0), 5)
         assert circle != 2
+
+    def test_scaled(self, circle: Circle) -> None:
+        assert circle.scaled(2, Point(1, 1)) == Circle(Point(-1, -1), 20)
 
 
 class TestRectangle:
@@ -135,6 +153,11 @@ class TestRectangle:
         assert center.x == 50
         assert center.y == 30
 
+    def test_scaled(self, rectangle: Rectangle) -> None:
+        assert rectangle.scaled(2, 3, Point(10, 10)) == Rectangle(
+            Point(-10, -20), Point(190, 160)
+        )
+
 
 class TestDirectedRange:
     @pytest.fixture(scope="class")
@@ -143,6 +166,9 @@ class TestDirectedRange:
 
     def test_coords(self, drange: DirectedRange) -> None:
         assert drange.coords == (0, 100)
+
+    def test_scaled(self, drange: DirectedRange) -> None:
+        assert drange.scaled(2, 25) == DirectedRange(-25, 175)
 
     def test_length(self, drange: DirectedRange) -> None:
         assert drange.length == 100
@@ -179,6 +205,20 @@ class TestDefaultCoordSys:
             y_range=DirectedRange(68, 0),
         )
         assert cs != 2
+
+    def test_scaled(self, cs: CoordinateSystem) -> None:
+        assert cs.scaled(2, 3, Point(10, 10)) == CoordinateSystem(
+            origin=Point(-10, -20),
+            x_range=DirectedRange(-10, 200),
+            y_range=DirectedRange(-20, 184),
+        )
+
+    @pytest.mark.parametrize("factor", [0, -1])
+    def test_scaled_rejects_non_positive_factor(
+        self, cs: CoordinateSystem, factor: float
+    ) -> None:
+        with pytest.raises(ValueError, match="Scale factors must be positive"):
+            cs.scaled(factor, 1, Point(0, 0))
 
     def test_shift_point(self, cs: CoordinateSystem) -> None:
         assert cs.shift(Point(1, 2), x_offset=10) == Point(11, 2)
