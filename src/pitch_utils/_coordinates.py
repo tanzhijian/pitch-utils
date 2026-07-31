@@ -645,3 +645,10 @@ class CoordinateSystem:
         if isinstance(geom, Circle):
             return geom.with_points(transformed)
         return type(geom).from_points(transformed)
+
+    def transposed(self) -> CoordinateSystem:
+        return CoordinateSystem(
+            origin=self.origin,
+            x_range=self._y_range,
+            y_range=self._x_range,
+        )

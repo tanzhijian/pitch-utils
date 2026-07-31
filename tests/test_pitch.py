@@ -177,6 +177,12 @@ class TestHorizontalPitch:
             (107.44, 37.66),
         )
 
+    def test_transposed(self, pitch: HorizontalPitch) -> None:
+        transposed_pitch = pitch.transposed()
+        assert isinstance(transposed_pitch, VerticalPitch)
+        assert transposed_pitch.coord_sys.x_range == DirectedRange(0, 68)
+        assert transposed_pitch.coord_sys.y_range == DirectedRange(0, 105)
+
 
 class TestVerticalPitch:
     @pytest.fixture(scope="class")
@@ -278,3 +284,9 @@ class TestVerticalPitch:
             (37.66, 105),
             (37.66, 107.44),
         )
+
+    def test_transposed(self, pitch: VerticalPitch) -> None:
+        transposed_pitch = pitch.transposed()
+        assert isinstance(transposed_pitch, HorizontalPitch)
+        assert transposed_pitch.coord_sys.x_range == DirectedRange(0, 105)
+        assert transposed_pitch.coord_sys.y_range == DirectedRange(0, 68)

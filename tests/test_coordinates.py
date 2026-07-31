@@ -400,6 +400,13 @@ class TestDefaultCoordSys:
             [-1.0, 0.0],
         ]
 
+    def test_transposed(self, cs: CoordinateSystem) -> None:
+        assert cs.transposed() == CoordinateSystem(
+            origin=Point(0, 0),
+            x_range=DirectedRange(0, 68),
+            y_range=DirectedRange(0, 105),
+        )
+
 
 class TestLeftDownCoordSys:
     @pytest.fixture

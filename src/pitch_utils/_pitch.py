@@ -214,7 +214,7 @@ class Pitch(ABC):
         return self._coord_sys.reflect(self._goal_1, self.halfway_line)
 
     @abstractmethod
-    def transpose(self) -> "Pitch":
+    def transposed(self) -> "Pitch":
         raise NotImplementedError
 
 
@@ -347,8 +347,13 @@ class HorizontalPitch(Pitch):
     def right_goal(self) -> Rectangle:
         return self._goal_2
 
-    def transpose(self) -> "VerticalPitch":
-        raise NotImplementedError
+    def transposed(self) -> "VerticalPitch":
+        return VerticalPitch(
+            touch_line_range=self._touch_line_range,
+            goal_line_range=self._goal_line_range,
+            markings=self._markings,
+            coord_sys=self._coord_sys.transposed(),
+        )
 
 
 class VerticalPitch(Pitch):
@@ -479,5 +484,10 @@ class VerticalPitch(Pitch):
     def top_goal(self) -> Rectangle:
         return self._goal_2
 
-    def transpose(self) -> HorizontalPitch:
-        raise NotImplementedError
+    def transposed(self) -> HorizontalPitch:
+        return HorizontalPitch(
+            touch_line_range=self._touch_line_range,
+            goal_line_range=self._goal_line_range,
+            markings=self._markings,
+            coord_sys=self._coord_sys.transposed(),
+        )
