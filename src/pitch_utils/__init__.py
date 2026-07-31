@@ -9,10 +9,12 @@ from ._coordinates import (
 )
 from ._markings import MarkingDimensions, Markings
 from ._pitch import HorizontalPitch, Pitch, VerticalPitch
+from ._transforms import flip, scale, shift, transform, transpose
 
 __all__ = [
     "Circle",
     "CoordinateSystem",
+    "flip",
     "HorizontalPitch",
     "DirectedRange",
     "Line",
@@ -22,5 +24,9 @@ __all__ = [
     "Point",
     "Points",
     "Rectangle",
+    "scale",
+    "shift",
+    "transform",
+    "transpose",
     "VerticalPitch",
 ]
