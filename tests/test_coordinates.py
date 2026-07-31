@@ -167,6 +167,48 @@ class TestDirectedRange:
     def test_coords(self, drange: DirectedRange) -> None:
         assert drange.coords == (0, 100)
 
+    def test_tuple_operations(self, drange: DirectedRange) -> None:
+        start, end = drange
+        assert (start, end) == (0, 100)
+        assert drange[0] == 0
+        assert drange[:] == (0, 100)
+        assert len(drange) == 2
+        assert 100 in drange
+        assert drange.count(0) == 1
+        assert drange.index(100) == 1
+        assert tuple(drange) == (0, 100)
+
+    def test_tuple_equality(self, drange: DirectedRange) -> None:
+        assert drange == (0, 100)
+        assert drange != (0, 101)
+        assert drange != (0, 100, 200)
+        assert drange != object()
+
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            ((0, 100), DirectedRange(0, 100)),
+            (DirectedRange(0, 100), DirectedRange(0, 100)),
+        ],
+    )
+    def test_from_value_accepts_valid_ranges(
+        self, value: object, expected: DirectedRange
+    ) -> None:
+        assert (
+            DirectedRange.from_value(cast(tuple[float, float], value))
+            == expected
+        )
+
+    def test_from_value_returns_directed_range_unchanged(
+        self, drange: DirectedRange
+    ) -> None:
+        assert DirectedRange.from_value(drange) is drange
+
+    @pytest.mark.parametrize("value", [(0,), (0, 1, 2), (0, "one"), "0, 1"])
+    def test_from_value_rejects_invalid_ranges(self, value: object) -> None:
+        with pytest.raises(TypeError, match="Directed range"):
+            DirectedRange.from_value(cast(tuple[float, float], value))
+
     def test_scaled(self, drange: DirectedRange) -> None:
         assert drange.scaled(2, 25) == DirectedRange(-25, 175)
 
@@ -209,6 +251,15 @@ class TestDefaultCoordSys:
             y_range=DirectedRange(68, 0),
         )
         assert cs != 2
+
+    def test_accepts_tuple_ranges(self) -> None:
+        cs = CoordinateSystem(
+            origin=Point(0, 0), x_range=(0, 105), y_range=(0, 68)
+        )
+        assert cs.x_range == DirectedRange(0, 105)
+        assert cs.y_range == DirectedRange(0, 68)
+        assert isinstance(cs.x_range, DirectedRange)
+        assert isinstance(cs.y_range, DirectedRange)
 
     def test_scaled(self, cs: CoordinateSystem) -> None:
         assert cs.scaled(2, 3, Point(10, 10)) == CoordinateSystem(

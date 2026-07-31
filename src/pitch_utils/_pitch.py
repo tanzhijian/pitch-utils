@@ -4,6 +4,7 @@ from ._coordinates import (
     Circle,
     CoordinateSystem,
     DirectedRange,
+    DirectedRangeLike,
     Line,
     Point,
     Rectangle,
@@ -14,17 +15,17 @@ from ._markings import Markings
 class Pitch(ABC):
     def __init__(
         self,
-        touch_line_range: DirectedRange,
-        goal_line_range: DirectedRange,
+        touch_line_range: DirectedRangeLike,
+        goal_line_range: DirectedRangeLike,
         markings: Markings | None = None,
         coord_sys: CoordinateSystem | None = None,
     ) -> None:
-        self._touch_line_range = touch_line_range
-        self._goal_line_range = goal_line_range
+        self._touch_line_range = DirectedRange.from_value(touch_line_range)
+        self._goal_line_range = DirectedRange.from_value(goal_line_range)
         self._area = self._build_area()
 
-        touch_line = touch_line_range.length
-        goal_line = goal_line_range.length
+        touch_line = self._touch_line_range.length
+        goal_line = self._goal_line_range.length
         self._markings = (
             markings
             if markings is not None

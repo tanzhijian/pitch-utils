@@ -56,6 +56,15 @@ class TestHorizontalPitch:
             goal_line_range=DirectedRange(0, 68),
         )
 
+    def test_accepts_tuple_ranges(self) -> None:
+        pitch = HorizontalPitch(
+            touch_line_range=(0, 105), goal_line_range=(0, 68)
+        )
+        assert pitch.touch_line_range == DirectedRange(0, 105)
+        assert pitch.goal_line_range == DirectedRange(0, 68)
+        assert isinstance(pitch.touch_line_range, DirectedRange)
+        assert isinstance(pitch.goal_line_range, DirectedRange)
+
     def test_coord_sys(self, pitch: HorizontalPitch) -> None:
         coord_sys = pitch.coord_sys
         assert coord_sys.x_dir == "right"
@@ -176,6 +185,15 @@ class TestVerticalPitch:
             touch_line_range=DirectedRange(0, 105),
             goal_line_range=DirectedRange(0, 68),
         )
+
+    def test_accepts_tuple_ranges(self) -> None:
+        pitch = VerticalPitch(
+            touch_line_range=(0, 105), goal_line_range=(0, 68)
+        )
+        assert pitch.touch_line_range == DirectedRange(0, 105)
+        assert pitch.goal_line_range == DirectedRange(0, 68)
+        assert isinstance(pitch.touch_line_range, DirectedRange)
+        assert isinstance(pitch.goal_line_range, DirectedRange)
 
     def test_coord_sys(self, pitch: VerticalPitch) -> None:
         coord_sys = pitch.coord_sys

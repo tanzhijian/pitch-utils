@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from functools import total_ordering
-from typing import Any, Iterator, Literal, Sequence, overload
+from typing import Any, Iterator, Literal, Sequence, cast, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -330,36 +330,64 @@ class Rectangle:
         )
 
 
-class DirectedRange:
-    def __init__(self, start: float, end: float) -> None:
-        self._start = start
-        self._end = end
+type DirectedRangeLike = DirectedRange | tuple[float, float]
+
+
+class DirectedRange(tuple[float, float]):
+    __slots__ = ()
+    __hash__ = None
+
+    def __new__(cls, start: float, end: float) -> DirectedRange:
+        return super().__new__(cls, (float(start), float(end)))
+
+    @classmethod
+    def from_value(cls, value: DirectedRangeLike) -> DirectedRange:
+        if isinstance(value, cls):
+            return value
+        if not isinstance(value, tuple):
+            raise TypeError(
+                "Directed range must be a DirectedRange or a tuple of two "
+                "numbers"
+            )
+        try:
+            start, end = value
+            return cls(start, end)
+        except (TypeError, ValueError) as error:
+            raise TypeError(
+                "Directed range must be a DirectedRange or a tuple of two "
+                "numbers"
+            ) from error
 
     def __eq__(self, value: object) -> bool:
-        if not isinstance(value, DirectedRange):
+        if not isinstance(value, tuple) or len(value) != 2:
             return False
-        return math.isclose(self.start, value.start) and math.isclose(
-            self.end, value.end
-        )
+        try:
+            start = float(cast(Any, value[0]))
+            end = float(cast(Any, value[1]))
+            return math.isclose(self.start, start) and math.isclose(
+                self.end, end
+            )
+        except (TypeError, ValueError):
+            return False
 
     def __repr__(self) -> str:
-        return f"DirectedRange(start={self._start}, end={self._end})"
+        return f"DirectedRange(start={self.start}, end={self.end})"
 
     @property
     def start(self) -> float:
-        return self._start
+        return self[0]
 
     @property
     def end(self) -> float:
-        return self._end
+        return self[1]
 
     @property
     def coords(self) -> tuple[float, float]:
-        return (self._start, self._end)
+        return tuple(self)
 
     @property
     def length(self) -> float:
-        return abs(self._end - self._start)
+        return abs(self.end - self.start)
 
     def flipped(self) -> DirectedRange:
         return DirectedRange(self.end, self.start)
@@ -377,12 +405,12 @@ class CoordinateSystem:
     def __init__(
         self,
         origin: Point,
-        x_range: DirectedRange,
-        y_range: DirectedRange,
+        x_range: DirectedRangeLike,
+        y_range: DirectedRangeLike,
     ) -> None:
         self._origin = origin
-        self._x_range = x_range
-        self._y_range = y_range
+        self._x_range = DirectedRange.from_value(x_range)
+        self._y_range = DirectedRange.from_value(y_range)
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, CoordinateSystem):
@@ -489,22 +517,16 @@ class CoordinateSystem:
             y_range=self.y_range.scaled(y_factor, origin.y),
         )
 
-    def flipped(
-        self, *, x: bool = False, y: bool = False
-    ) -> CoordinateSystem:
+    def flipped(self, *, x: bool = False, y: bool = False) -> CoordinateSystem:
         return CoordinateSystem(
             origin=Point(
                 (
-                    self.x_range.start
-                    + self.x_range.end
-                    - self.origin.x
+                    self.x_range.start + self.x_range.end - self.origin.x
                     if x
                     else self.origin.x
                 ),
                 (
-                    self.y_range.start
-                    + self.y_range.end
-                    - self.origin.y
+                    self.y_range.start + self.y_range.end - self.origin.y
                     if y
                     else self.origin.y
                 ),
