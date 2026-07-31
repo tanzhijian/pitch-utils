@@ -8,7 +8,14 @@ from pitch_utils import (
     Points,
     VerticalPitch,
 )
-from pitch_utils._transforms import flip, scale, shift, transform, transpose
+from pitch_utils._transforms import (
+    flip,
+    reflact,
+    scale,
+    shift,
+    transform,
+    transpose,
+)
 
 
 @pytest.fixture
@@ -109,3 +116,25 @@ class TestTransform:
         np.testing.assert_allclose(
             transformed.to_numpy(), np.array([[100, 250], [200, -50]])
         )
+
+
+class TestReflact:
+    def test_reflects_across_horizontal_pitch_halfway_line(
+        self, horizontal_pitch: HorizontalPitch
+    ) -> None:
+        points = Points.from_rows([[10, 20], [52.5, 34]])
+
+        assert reflact(points, horizontal_pitch).to_list() == [
+            [95.0, 20.0],
+            [52.5, 34.0],
+        ]
+
+    def test_reflects_across_vertical_pitch_halfway_line(
+        self, vertical_pitch: VerticalPitch
+    ) -> None:
+        points = Points.from_rows([[20, 10], [34, 52.5]])
+
+        assert reflact(points, vertical_pitch).to_list() == [
+            [20.0, 95.0],
+            [34.0, 52.5],
+        ]

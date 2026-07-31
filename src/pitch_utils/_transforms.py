@@ -68,3 +68,7 @@ def transform(points: Points, from_pitch: Pitch, to_pitch: Pitch) -> Points:
     flipped = flip(transposed, from_pitch, to_pitch)
     scaled = scale(flipped, from_pitch, to_pitch)
     return shift(scaled, from_pitch, to_pitch)
+
+
+def reflact(points: Points, pitch: Pitch) -> Points:
+    return pitch.coord_sys.reflect(points, pitch.halfway_line)

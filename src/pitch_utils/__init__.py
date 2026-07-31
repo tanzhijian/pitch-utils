@@ -9,7 +9,7 @@ from ._coordinates import (
 )
 from ._markings import MarkingDimensions, Markings
 from ._pitch import HorizontalPitch, Pitch, VerticalPitch
-from ._transforms import flip, scale, shift, transform, transpose
+from ._transforms import flip, reflact, scale, shift, transform, transpose
 
 __all__ = [
     "Circle",
@@ -24,6 +24,7 @@ __all__ = [
     "Point",
     "Points",
     "Rectangle",
+    "reflact",
     "scale",
     "shift",
     "transform",
