@@ -361,6 +361,9 @@ class DirectedRange:
     def length(self) -> float:
         return abs(self._end - self._start)
 
+    def flipped(self) -> DirectedRange:
+        return DirectedRange(self.end, self.start)
+
     def scaled(self, factor: float, origin: float) -> DirectedRange:
         values = _scale(
             np.array([[self.start], [self.end]], dtype=np.float64),
@@ -484,6 +487,30 @@ class CoordinateSystem:
             origin=self.origin.scaled(x_factor, y_factor, origin),
             x_range=self.x_range.scaled(x_factor, origin.x),
             y_range=self.y_range.scaled(y_factor, origin.y),
+        )
+
+    def flipped(
+        self, *, x: bool = False, y: bool = False
+    ) -> CoordinateSystem:
+        return CoordinateSystem(
+            origin=Point(
+                (
+                    self.x_range.start
+                    + self.x_range.end
+                    - self.origin.x
+                    if x
+                    else self.origin.x
+                ),
+                (
+                    self.y_range.start
+                    + self.y_range.end
+                    - self.origin.y
+                    if y
+                    else self.origin.y
+                ),
+            ),
+            x_range=self.x_range.flipped() if x else self.x_range,
+            y_range=self.y_range.flipped() if y else self.y_range,
         )
 
     @overload

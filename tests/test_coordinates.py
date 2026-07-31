@@ -173,6 +173,10 @@ class TestDirectedRange:
     def test_length(self, drange: DirectedRange) -> None:
         assert drange.length == 100
 
+    def test_flipped(self, drange: DirectedRange) -> None:
+        assert drange.flipped() == DirectedRange(100, 0)
+        assert drange == DirectedRange(0, 100)
+
 
 class TestDefaultCoordSys:
     @pytest.fixture(scope="class")
@@ -211,6 +215,33 @@ class TestDefaultCoordSys:
             origin=Point(-10, -20),
             x_range=DirectedRange(-10, 200),
             y_range=DirectedRange(-20, 184),
+        )
+
+    def test_flipped(self) -> None:
+        cs = CoordinateSystem(
+            origin=Point(20, 10),
+            x_range=DirectedRange(0, 105),
+            y_range=DirectedRange(0, 68),
+        )
+        assert cs.flipped(x=True) == CoordinateSystem(
+            origin=Point(85, 10),
+            x_range=DirectedRange(105, 0),
+            y_range=DirectedRange(0, 68),
+        )
+        assert cs.flipped(y=True) == CoordinateSystem(
+            origin=Point(20, 58),
+            x_range=DirectedRange(0, 105),
+            y_range=DirectedRange(68, 0),
+        )
+        assert cs.flipped(x=True, y=True) == CoordinateSystem(
+            origin=Point(85, 58),
+            x_range=DirectedRange(105, 0),
+            y_range=DirectedRange(68, 0),
+        )
+        assert cs == CoordinateSystem(
+            origin=Point(20, 10),
+            x_range=DirectedRange(0, 105),
+            y_range=DirectedRange(0, 68),
         )
 
     @pytest.mark.parametrize("factor", [0, -1])
@@ -333,6 +364,13 @@ class TestLeftDownCoordSys:
         assert cs.shift(
             Point(1, 2), x_offset=10, y_offset=3, x_op="-", y_op="-"
         ) == Point(11, 5)
+
+    def test_flipped(self, cs: CoordinateSystem) -> None:
+        assert cs.flipped(x=True, y=True) == CoordinateSystem(
+            origin=Point(105, 68),
+            x_range=DirectedRange(0, 105),
+            y_range=DirectedRange(0, 68),
+        )
 
     def test_reflect_point(self, cs: CoordinateSystem) -> None:
         pivot = Line(Point(0, -1), Point(0, 1))
