@@ -400,6 +400,31 @@ class TestDefaultCoordSys:
             [-1.0, 0.0],
         ]
 
+    def test_transpose_point(self, cs: CoordinateSystem) -> None:
+        point = Point(60, 40)
+        transposed = cs.transpose(point)
+        assert transposed == Point(28, 60)
+
+    def test_transpose_line(self, cs: CoordinateSystem) -> None:
+        line = Line(Point(60, 40), Point(80, 50))
+        transposed = cs.transpose(line)
+        assert transposed.is_strictly_equal(Line(Point(28, 60), Point(18, 80)))
+
+    def test_transpose_circle(self, cs: CoordinateSystem) -> None:
+        circle = Circle(Point(60, 40), 10)
+        transposed = cs.transpose(circle)
+        assert transposed == Circle(Point(28, 60), 10)
+
+    def test_transpose_rectangle(self, cs: CoordinateSystem) -> None:
+        rectangle = Rectangle(Point(60, 40), Point(80, 50))
+        transposed = cs.transpose(rectangle)
+        assert transposed == Rectangle(Point(28, 60), Point(18, 80))
+
+    def test_transpose_points(self, cs: CoordinateSystem) -> None:
+        points = Points.from_rows([[60, 40], [80, 50]])
+        transposed = cs.transpose(points)
+        assert transposed.to_list() == [[28.0, 60.0], [18.0, 80.0]]
+
     def test_transposed(self, cs: CoordinateSystem) -> None:
         assert cs.transposed() == CoordinateSystem(
             origin=Point(0, 0),
@@ -437,3 +462,8 @@ class TestLeftDownCoordSys:
     def test_rotate_point(self, cs: CoordinateSystem) -> None:
         assert cs.rotate(Point(1, 0), 90, Point(0, 0)) == Point(0, 1)
         assert cs.rotate(Point(-1, 0), 180, Point(0, 0)) == Point(1, 0)
+
+    def test_transpose_point(self, cs: CoordinateSystem) -> None:
+        point = Point(60, 40)
+        transposed = cs.transpose(point)
+        assert transposed == Point(28, 60)

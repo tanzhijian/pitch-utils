@@ -508,6 +508,19 @@ class CoordinateSystem:
         rotated = (standard @ rotation.T * signs) + origin_coords
         return Points.from_numpy(np.round(rotated, 2))
 
+    def _transpose_points(self, geom: Points) -> Points:
+        rotated_points = self._rotate_points(geom, 90, self._origin)
+        x_op = "+" if self._y_sign == 1 else "-"
+        y_op = "+" if self._x_sign == 1 else "-"
+        shifted_points = self._shift_points(
+            rotated_points,
+            x_offset=self._y_range.length,
+            y_offset=0,
+            x_op=x_op,
+            y_op=y_op,
+        )
+        return shifted_points
+
     def scaled(
         self, x_factor: float, y_factor: float, origin: Point
     ) -> CoordinateSystem:
@@ -640,6 +653,30 @@ class CoordinateSystem:
     def rotate(self, geom, angle, origin):
         points = geom if isinstance(geom, Points) else geom.to_points()
         transformed = self._rotate_points(points, angle, origin)
+        if isinstance(geom, Points):
+            return transformed
+        if isinstance(geom, Circle):
+            return geom.with_points(transformed)
+        return type(geom).from_points(transformed)
+
+    @overload
+    def transpose(self, geom: Points) -> Points: ...
+
+    @overload
+    def transpose(self, geom: Point) -> Point: ...
+
+    @overload
+    def transpose(self, geom: Line) -> Line: ...
+
+    @overload
+    def transpose(self, geom: Circle) -> Circle: ...
+
+    @overload
+    def transpose(self, geom: Rectangle) -> Rectangle: ...
+
+    def transpose(self, geom):
+        points = geom if isinstance(geom, Points) else geom.to_points()
+        transformed = self._transpose_points(points)
         if isinstance(geom, Points):
             return transformed
         if isinstance(geom, Circle):
